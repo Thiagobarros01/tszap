@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZapZap CRM</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div id="login-screen" class="screen active">
+        <div class="login-card" style="padding:2rem; border-radius:1rem; width:100%; max-width:380px; text-align:center">
+            <div style="width:60px; height:60px; background:#00a884; border-radius:50%; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; color:#fff">
+                <span class="material-icons-round" style="font-size:32px">bolt</span>
+            </div>
+            <h2 style="margin-bottom:1.5rem">ZapZap CRM</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Login" class="form-input" required>
+                <input type="password" id="password" placeholder="Senha" class="form-input" required>
+                <button type="submit" id="btn-login" class="btn-primary" style="width:100%">Entrar</button>
+                <p id="login-error" class="error-msg" style="color:red; margin-top:10px; display:none"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="screen">
+        
+        <nav class="nav-rail">
+            <div class="nav-brand">
+                <span class="material-icons-round">bolt</span>
+            </div>
+            
+            <div class="nav-items">
+                <button class="nav-btn active" onclick="navigate('chat')" title="Atendimento">
+                    <span class="material-icons-round">chat</span>
+                </button>
+                <button class="nav-btn" onclick="navigate('clients')" title="Gestão de Clientes">
+                    <span class="material-icons-round">people</span>
+                </button>
+            </div>
+
+            <div class="nav-footer">
+                <button id="btn-logout" class="nav-btn logout" title="Sair">
+                    <span class="material-icons-round">logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            
+            <div id="view-chat" class="view active">
+                <aside class="sidebar">
+                    <header class="sidebar-header">
+                        <div class="user-pill">
+                            <div class="user-avatar-small"><span class="material-icons-round">person</span></div>
+                            <span id="display-username" style="font-weight:600">...</span>
+                        </div>
+                        <button id="btn-refresh" class="btn-icon"><span class="material-icons-round">refresh</span></button>
+                    </header>
+                    <div class="search-bar-container">
+                        <input type="text" id="search-input" placeholder="Buscar conversa...">
+                    </div>
+                    <div id="conversation-list" class="conversation-list"></div>
+                </aside>
+
+                <main class="chat-area">
+                    <div id="empty-state" class="empty-state active">
+                        <span class="material-icons-round" style="font-size:48px; opacity:0.3">chat</span>
+                        <h3>Atendimento</h3>
+                        <p>Selecione uma conversa para começar</p>
+                    </div>
+
+                    <div id="chat-container" class="chat-container">
+                        <header class="chat-header">
+                             <div class="header-left"> 
+                                <div id="chat-header-info" style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                                    <h3 id="header-name">--</h3>
+                                    <span id="header-status" style="font-size:0.8rem; color:#666"></span>
+                                </div>
+                            </div>
+                            <div class="header-right" style="display:flex; gap:10px">
+                                <button id="btn-transfer" style="border:1px solid #ccc; background:#fff; padding:6px 12px; border-radius:18px; cursor:pointer">Transferir</button>
+                                <button id="btn-end" style="border:1px solid #ef5350; background:#fff; color:#ef5350; padding:6px 12px; border-radius:18px; cursor:pointer">Encerrar</button>
+                            </div>
+                        </header>
+
+                        <div id="messages-box" class="messages-box"></div>
+
+                        <footer class="chat-input-area">
+                            <div class="input-wrapper">
+                                <textarea id="msg-input" placeholder="Digite uma mensagem" rows="1"></textarea>
+                            </div>
+                            <button id="btn-send" class="btn-send"><span class="material-icons-round">send</span></button>
+                        </footer>
+                    </div>
+                </main>
+            </div>
+
+            <div id="view-clients" class="view">
+                <div class="page-header">
+                    <h2>Gestão de Clientes</h2>
+                    <button class="btn-primary" onclick="openNewClientModal()">
+                        <span class="material-icons-round">add</span> Novo Cliente
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Telefone</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clients-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Transferir</h3>
+                <button id="btn-close-modal" class="btn-icon-light"><span class="material-icons-round">close</span></button>
+            </div>
+            <div id="attendants-list" class="modal-body"></div>
+            <div class="modal-footer">
+                <button id="btn-cancel-transfer" class="btn-text">Cancelar</button>
+                <button id="btn-confirm-transfer" disabled class="btn-primary">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="client-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Detalhes do Cliente</h3>
+                <button id="btn-close-client" class="btn-icon-light"><span class="material-icons-round">close</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="client-form">
+                    <div class="input-group" style="display:flex; flex-direction:column; gap:5px; margin-bottom:15px">
+                        <label style="font-size:0.85rem; color:#666">Telefone (Fixo)</label>
+                        <input type="text" id="client-phone-edit" disabled class="form-input" style="background:#f0f2f5; color:#888">
+                    </div>
+                    <div class="input-group" style="display:flex; flex-direction:column; gap:5px">
+                        <label style="font-size:0.85rem; color:#666">Nome do Cliente</label>
+                        <input type="text" id="client-name-edit" placeholder="Ex: João da Silva" class="form-input" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-client" class="btn-primary">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-client-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Novo Cliente</h3>
+                <button onclick="document.getElementById('new-client-modal').classList.remove('active')" class="btn-icon-light"><span class="material-icons-round">close</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="new-client-form" style="display:flex; flex-direction:column; gap:15px">
+                    <input type="text" id="new-client-name" placeholder="Nome Completo" class="form-input" required>
+                    <input type="text" id="new-client-phone" placeholder="Telefone (Ex: 5511999998888)" class="form-input" required>
+                    <button type="submit" class="btn-primary" style="margin-top:10px">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

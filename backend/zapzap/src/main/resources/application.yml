@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: conversazap
+  profiles:
+    active: dev
+
+

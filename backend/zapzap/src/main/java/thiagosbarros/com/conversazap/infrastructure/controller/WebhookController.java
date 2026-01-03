@@ -1,0 +1,25 @@
+package thiagosbarros.com.conversazap.infrastructure.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import thiagosbarros.com.conversazap.application.usecase.ProcessarMensagemUseCase;
+import thiagosbarros.com.conversazap.interfaces.dto.RespostaMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.WebhookMensagemDTO;
+
+@RestController
+@RequestMapping("/webhook")
+public class WebhookController {
+
+    private final ProcessarMensagemUseCase useCase;
+
+    public WebhookController(ProcessarMensagemUseCase useCase) {
+        this.useCase = useCase;
+    }
+
+    @PostMapping
+    public ResponseEntity<RespostaMensagemDTO> receberMensagem(
+            @RequestBody WebhookMensagemDTO dto
+    ) {
+        return ResponseEntity.ok(useCase.executar(dto));
+    }
+}

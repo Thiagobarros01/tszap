@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5555/whatsapp_db
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      idle-timeout: 30000
+      pool-name: my-pool
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: true
+
+server:
+  port: 8080
