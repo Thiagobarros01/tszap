@@ -32,12 +32,6 @@ public class Cliente {
         this.empresa = empresa;
     }
 
-    public Cliente(String telefone, String nome, Empresa empresa) {
-        this.telefone = telefone;
-        this.nome = nome;
-        this.empresa = empresa;
-    }
-
     public Long getId() {
         return id;
     }

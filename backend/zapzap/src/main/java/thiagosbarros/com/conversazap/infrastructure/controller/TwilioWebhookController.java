@@ -2,13 +2,15 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import thiagosbarros.com.conversazap.application.usecase.ProcessarMensagemUseCase;
-import thiagosbarros.com.conversazap.interfaces.dto.RespostaMensagemDTO;
-import thiagosbarros.com.conversazap.interfaces.dto.WebhookMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.RespostaMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.WebhookMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.TwilioWebhookDTO;
 
 import java.util.Map;
 

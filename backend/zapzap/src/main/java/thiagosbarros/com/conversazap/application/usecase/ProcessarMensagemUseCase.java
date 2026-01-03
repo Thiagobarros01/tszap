@@ -2,8 +2,8 @@ package thiagosbarros.com.conversazap.application.usecase;
 
 import org.springframework.stereotype.Component;
 import thiagosbarros.com.conversazap.application.service.AtendimentoService;
-import thiagosbarros.com.conversazap.interfaces.dto.RespostaMensagemDTO;
-import thiagosbarros.com.conversazap.interfaces.dto.WebhookMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.RespostaMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.WebhookMensagemDTO;
 
 @Component
 public class ProcessarMensagemUseCase {

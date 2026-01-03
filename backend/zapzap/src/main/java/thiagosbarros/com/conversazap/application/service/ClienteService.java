@@ -25,7 +25,9 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public List<ClienteResponseDto> listarClientes() {
-        List<Cliente> clientes = clienteRepository.findAll();
+        Usuario usuarioLogado = securityService.usuarioLogado();
+
+        List<Cliente> clientes = clienteRepository.findByEmpresa(usuarioLogado.getEmpresa());
         return clientes.stream().map(c->
                 new ClienteResponseDto(c.getId(),c.getNome(),c.getTelefone())).toList();
     }

@@ -489,3 +489,101 @@ function setLoading(btn, active) {
     btn.disabled = active;
     btn.innerHTML = active ? '<div class="spinner"></div>' : 'Entrar';
 }
+
+
+// --- LÓGICA DE TRANSFERÊNCIA ---
+
+// 1. Abrir Modal e Carregar Atendentes
+if (ui.chat.btnTransfer) {
+    ui.chat.btnTransfer.addEventListener('click', async () => {
+        if (!state.currentChatId) return;
+
+        ui.modal.el.classList.add('active');
+        ui.modal.list.innerHTML = '<div style="padding:10px">Carregando atendentes...</div>';
+        ui.modal.confirm.disabled = true;
+        selectedTransferId = null;
+
+        try {
+            // Chama o endpoint ajustado que lista usuários da empresa
+            const res = await apiCall('/usuarios'); 
+            if (res && res.ok) {
+                const usuarios = await res.json();
+                renderAttendantsList(usuarios);
+            } else {
+                ui.modal.list.innerHTML = '<div style="color:red; padding:10px">Erro ao carregar lista.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            ui.modal.list.innerHTML = '<div style="color:red; padding:10px">Erro de conexão.</div>';
+        }
+    });
+}
+
+function renderAttendantsList(usuarios) {
+    ui.modal.list.innerHTML = '';
+    
+    if (usuarios.length === 0) {
+        ui.modal.list.innerHTML = '<div style="padding:10px; color:#666">Nenhum outro atendente disponível.</div>';
+        return;
+    }
+
+    usuarios.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'attendant-item'; // Adicione css para isso se quiser (padding: 10px; cursor: pointer...)
+        item.style.padding = '10px';
+        item.style.borderBottom = '1px solid #eee';
+        item.style.cursor = 'pointer';
+        item.innerHTML = `
+            <div style="font-weight:bold">${u.login}</div>
+            <div style="font-size:0.8rem; color:#888">${u.role || 'Atendente'}</div>
+        `;
+        
+        item.onclick = () => {
+            // Remove seleção visual dos outros
+            Array.from(ui.modal.list.children).forEach(c => c.style.background = 'transparent');
+            // Seleciona este
+            item.style.background = '#eef1f4';
+            selectedTransferId = u.id; // Precisa vir do DTO atualizado
+            ui.modal.confirm.disabled = false;
+        };
+        
+        ui.modal.list.appendChild(item);
+    });
+}
+
+// 2. Confirmar Transferência
+if (ui.modal.confirm) {
+    ui.modal.confirm.addEventListener('click', async () => {
+        if (!state.currentChatId || !selectedTransferId) return;
+
+        const btn = ui.modal.confirm;
+        btn.textContent = 'Transferindo...';
+        btn.disabled = true;
+
+        try {
+            const res = await apiCall(`/painel/atendimento/conversas/${state.currentChatId}/transferir/${selectedTransferId}`, 'PATCH');
+            
+            if (res && res.ok) {
+                showToast('Conversa transferida com sucesso!', 'success');
+                ui.modal.el.classList.remove('active');
+                // Limpa o chat atual pois não pertence mais ao usuário
+                state.currentChatId = null;
+                ui.chat.container.classList.remove('active');
+                ui.chat.empty.classList.add('active');
+                loadConversations();
+            } else {
+                const err = await res.json(); // Tenta ler erro do backend
+                showToast(err.mensagem || 'Erro ao transferir.', 'error');
+            }
+        } catch (error) {
+            showToast('Erro de comunicação.', 'error');
+        } finally {
+            btn.textContent = 'Confirmar';
+            btn.disabled = false;
+        }
+    });
+}
+
+// 3. Fechar Modal
+if (ui.modal.close) ui.modal.close.onclick = () => ui.modal.el.classList.remove('active');
+if (ui.modal.cancel) ui.modal.cancel.onclick = () => ui.modal.el.classList.remove('active');

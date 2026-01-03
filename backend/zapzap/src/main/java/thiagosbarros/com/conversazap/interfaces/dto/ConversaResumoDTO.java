@@ -4,18 +4,14 @@ public class ConversaResumoDTO {
 
     private Long conversaId;
     private String telefoneCliente;
-    private String nomeCliente;
     private String status;
     private Long usuarioId;
-    private Long clienteId;
 
-    public ConversaResumoDTO(Long conversaId, String telefoneCliente, String status,String nomeCliente, Long usuarioId, Long clienteId) {
+    public ConversaResumoDTO(Long conversaId, String telefoneCliente, String status, Long usuarioId) {
         this.conversaId = conversaId;
         this.telefoneCliente = telefoneCliente;
         this.status = status;
-        this.nomeCliente = nomeCliente;
         this.usuarioId = usuarioId;
-        this.clienteId = clienteId;
 
     }
 
@@ -34,12 +30,4 @@ public class ConversaResumoDTO {
     public Long getUsuarioId() {
         return usuarioId;
     }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-    public String getNomeCliente() {
-        return nomeCliente;
-    }
-
 }

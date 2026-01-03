@@ -53,9 +53,7 @@ public class AtendimentoHumanoService {
                         c.getId(),
                         c.getCliente().getTelefone(),
                         c.getStatus().name(),
-                        c.getCliente().getNome(),
-                        c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null,
-                        c.getCliente().getId()
+                        c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null
                 )).collect(Collectors.toList());
 
     }
@@ -73,6 +71,7 @@ public class AtendimentoHumanoService {
                         m.getData(),
                         m.getUsuario() != null ? m.getUsuario().getId() : null,
                         m.getUsuario() != null ? m.getUsuario().getLogin() : null
+
                 ))
                 .toList();
     }

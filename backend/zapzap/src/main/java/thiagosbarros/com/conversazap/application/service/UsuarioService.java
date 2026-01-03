@@ -3,16 +3,12 @@ package thiagosbarros.com.conversazap.application.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import thiagosbarros.com.conversazap.application.exception.UsuarioNaoEncontradoException;
-import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
+import thiagosbarros.com.conversazap.application.dto.UsuarioDTO;
 import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontrada;
 import thiagosbarros.com.conversazap.domain.model.Empresa;
 import thiagosbarros.com.conversazap.domain.model.Usuario;
 import thiagosbarros.com.conversazap.domain.repository.EmpresaRepository;
 import thiagosbarros.com.conversazap.domain.repository.UsuarioRepository;
-import thiagosbarros.com.conversazap.interfaces.dto.UsuarioResumoDTO;
-
-import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -44,25 +40,5 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Usuario obterPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
-    }
-
-    @Transactional(readOnly = true)
-    public List<UsuarioResumoDTO> listarUsuarios() {
-        return usuarioRepository.findAll().stream()
-                .map(u -> new UsuarioResumoDTO(
-                        u.getLogin(),
-                        u.getEmail(),
-                        u.getRole()
-                )).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public UsuarioResumoDTO obterUsuarioPorId(Long id){
-        return usuarioRepository.findById(id).map(u-> new UsuarioResumoDTO(
-                    u.getLogin(),
-                    u.getEmail(),
-                    u.getRole()
-                ))
-                .orElseThrow(()-> new UsuarioNaoEncontradoException("Usuario não encontrado!"));
     }
 }

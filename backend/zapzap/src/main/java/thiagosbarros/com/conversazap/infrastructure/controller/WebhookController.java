@@ -3,8 +3,8 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import thiagosbarros.com.conversazap.application.usecase.ProcessarMensagemUseCase;
-import thiagosbarros.com.conversazap.interfaces.dto.RespostaMensagemDTO;
-import thiagosbarros.com.conversazap.interfaces.dto.WebhookMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.RespostaMensagemDTO;
+import thiagosbarros.com.conversazap.interfaces.WebhookMensagemDTO;
 
 @RestController
 @RequestMapping("/webhook")
