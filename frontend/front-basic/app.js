@@ -164,6 +164,23 @@ function initApp() {
     }
 }
 
+ui.sidebar.list.addEventListener('click', (e) => {
+    // Procura se o clique foi dentro de um item de conversa
+    const item = e.target.closest('.conversation-item');
+    
+    // Se clicou fora, não faz nada
+    if (!item) return;
+
+    // Pega o ID que guardamos no Passo 1
+    const id = item.dataset.id;
+    
+    // Procura os dados da conversa e abre
+    const conversa = state.conversationsCache.find(c => c.conversaId == id);
+    if (conversa) {
+        openChat(conversa);
+    }
+});
+
 // --- CONVERSAS ---
 async function loadConversations() {
     const res = await apiCall('/painel/atendimento/conversas');
@@ -188,8 +205,10 @@ function renderConversations(list) {
     ui.sidebar.list.innerHTML = '';
     list.forEach(c => {
         const div = document.createElement('div');
+        div.dataset.id = c.conversaId; 
+        
+        // Destaque visual CORRETO - compara com state.currentChatId
         div.className = `conversation-item ${state.currentChatId === c.conversaId ? 'active' : ''}`;
-        div.onclick = () => openChat(c);
         
         const colorIndex = parseInt(c.telefoneCliente.replace(/\D/g, '').slice(-1)) || 0;
         const colors = ['#00a884', '#00bcd4', '#ff9800', '#e91e63', '#9c27b0', '#3f51b5'];
@@ -202,6 +221,7 @@ function renderConversations(list) {
             <div class="conv-info">
                 <div class="conv-top">
                     <span class="conv-name" title="${displayName}">${displayName}</span>
+                    <span class="conv-time">${c.ultimaMensagem ? formatSmartDate(new Date(c.ultimaMensagem.data)) : ''}</span>
                 </div>
                 <div class="conv-status">${c.status === 'BOT' ? '🤖 Robô' : '👤 Atendimento'}</div>
             </div>
@@ -209,7 +229,6 @@ function renderConversations(list) {
         ui.sidebar.list.appendChild(div);
     });
 }
-
 // --- CHAT ---
 function openChat(c) {
     state.currentChatId = c.conversaId;
@@ -217,51 +236,73 @@ function openChat(c) {
     ui.chat.headerName.textContent = displayName;
     ui.chat.headerStatus.textContent = c.status;
     
-    // Lógica Desktop e Mobile Unificada
+    // IMPORTANTE: Garantir que o empty state esteja escondido
     ui.chat.empty.classList.remove('active');
+    ui.chat.empty.style.display = 'none';
     
-    // Mostra o container do chat
+    // Mostra o container do chat SEMPRE
     ui.chat.container.classList.add('active');
     ui.chat.container.style.display = 'flex'; 
-
-    // -> MUDANÇA AQUI: Adiciona classe para animar no mobile
+    
+    // Adiciona classe para animar no mobile
     ui.views.chat.classList.add('chat-open');
     
+    // Scroll para o topo (importante para mobile)
+    ui.chat.box.scrollTop = 0;
+    
+    // Carrega mensagens
     loadMessages(c.conversaId, true);
     renderConversations(state.conversationsCache);
 }
 
+// Adicione também um listener para o btnBack (seta) para garantir limpeza
 if(ui.chat.btnBack) {
     ui.chat.btnBack.addEventListener('click', () => {
         // Remove a classe que mostra o chat, voltando para a lista
         ui.views.chat.classList.remove('chat-open');
         
-        // Limpa o chat atual (opcional, se quiser manter o estado pode remover essas linhas)
+        // Limpa o estado mas NÃO limpa mensagens (para caso volte)
+        state.currentChatId = null;
+        
+        // Pequeno delay para animação
         setTimeout(() => {
-            state.currentChatId = null;
             ui.chat.container.classList.remove('active');
-            renderConversations(state.conversationsCache); // Remove a seleção visual da lista
-        }, 300); // Espera a animação acabar
+            renderConversations(state.conversationsCache);
+        }, 300);
     });
 }
 
+// 4. Ajuste no botão Encerrar (btnEnd) para também voltar a tela
 // 4. Ajuste no botão Encerrar (btnEnd) para também voltar a tela
 ui.chat.btnEnd.addEventListener('click', async () => {
     if(confirm('Encerrar atendimento?')) {
         await apiCall(`/painel/atendimento/conversas/${state.currentChatId}/encerrar`, 'POST');
         
-        // UI Updates
+        // UI Updates - Limpar estado mais completamente
         state.currentChatId = null;
-        ui.views.chat.classList.remove('chat-open'); // Fecha no mobile
+        
+        // IMPORTANTE: Reset completo da UI do chat
+        ui.views.chat.classList.remove('chat-open');
         ui.chat.container.classList.remove('active');
         ui.chat.container.style.display = 'none';
+        
+        // Limpar mensagens
+        ui.chat.box.innerHTML = '';
         
         // Mostra empty state apenas se for desktop
         if(window.innerWidth > 768) {
             ui.chat.empty.classList.add('active');
             ui.chat.empty.style.display = 'flex';
+        } else {
+            // No mobile, garante que o empty state não apareça
+            ui.chat.empty.classList.remove('active');
+            ui.chat.empty.style.display = 'none';
         }
 
+        // Limpar input
+        ui.chat.input.value = '';
+        ui.chat.input.style.height = '24px';
+        
         loadConversations();
         showToast('Atendimento encerrado', 'success');
     }
