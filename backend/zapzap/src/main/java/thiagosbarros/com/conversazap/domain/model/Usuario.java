@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.Role;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
@@ -83,5 +85,17 @@ public class Usuario {
 
     public void desativar(){
         this.ativo = false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

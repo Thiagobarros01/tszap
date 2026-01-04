@@ -50,10 +50,13 @@ public class AtendimentoHumanoService {
 
         return conversaRepository.findByCliente_EmpresaAndStatusNot(empresa, StatusConversa.ENCERRADA)
                 .stream().map(c -> new ConversaResumoDTO(
-                        c.getId(),
-                        c.getCliente().getTelefone(),
-                        c.getStatus().name(),
-                        c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null
+                                c.getId(),
+                                c.getCliente().getTelefone(),
+                                c.getCliente().getNome(),
+                                c.getStatus().name(),
+                                c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null,
+                                c.getCliente().getId()
+
                 )).collect(Collectors.toList());
 
     }

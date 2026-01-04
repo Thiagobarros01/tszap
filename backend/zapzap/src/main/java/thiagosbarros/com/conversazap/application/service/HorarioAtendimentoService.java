@@ -12,7 +12,8 @@ import java.time.LocalTime;
 public class HorarioAtendimentoService {
 
     public boolean estaDentroDoHorario(LocalDateTime agora) {
-        agora = agora.minusDays(3);
+
+
         DayOfWeek dia = agora.getDayOfWeek();
         LocalTime hora = agora.toLocalTime();
 

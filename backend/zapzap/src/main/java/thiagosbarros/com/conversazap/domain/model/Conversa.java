@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "conversas")
@@ -78,5 +79,17 @@ public class Conversa {
 
     public StatusConversa getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Conversa conversa = (Conversa) o;
+        return Objects.equals(id, conversa.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

@@ -3,6 +3,7 @@ package thiagosbarros.com.conversazap.domain.model;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "empresas")
@@ -48,5 +49,17 @@ public class Empresa {
 
     public void desativar() {
         this.ativa = false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Empresa empresa = (Empresa) o;
+        return Objects.equals(id, empresa.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

@@ -9,10 +9,8 @@ import thiagosbarros.com.conversazap.domain.model.Usuario;
 @Component
 public class SecurityService {
 
-    private final UsuarioService usuarioService;
+    public SecurityService() {
 
-    public SecurityService(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
     }
 
     public Usuario usuarioLogado() {

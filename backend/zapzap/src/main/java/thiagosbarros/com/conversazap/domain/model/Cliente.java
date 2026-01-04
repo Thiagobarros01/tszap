@@ -2,6 +2,8 @@ package thiagosbarros.com.conversazap.domain.model;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(
         name = "clientes",
@@ -32,6 +34,12 @@ public class Cliente {
         this.empresa = empresa;
     }
 
+    public Cliente(String telefone, String nome, Empresa empresa) {
+        this.telefone = telefone;
+        this.nome = nome;
+        this.empresa = empresa;
+    }
+
     public Long getId() {
         return id;
     }
@@ -50,5 +58,17 @@ public class Cliente {
 
     public void definirNome(String nome) {
         this.nome = nome;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Cliente cliente = (Cliente) o;
+        return Objects.equals(id, cliente.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
