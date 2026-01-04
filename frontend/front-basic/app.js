@@ -164,19 +164,37 @@ function initApp() {
     }
 }
 
+// --- CORREÇÃO DO CLIQUE + ZERAR BOLINHA (Cole isso no app.js) ---
+
 ui.sidebar.list.addEventListener('click', (e) => {
-    // Procura se o clique foi dentro de um item de conversa
+    // 1. Descobre onde clicou (procura o item da conversa)
     const item = e.target.closest('.conversation-item');
     
-    // Se clicou fora, não faz nada
+    // 2. Se clicou fora, ignora
     if (!item) return;
 
-    // Pega o ID que guardamos no Passo 1
+    // 3. Pega o ID que guardamos no HTML
     const id = item.dataset.id;
     
-    // Procura os dados da conversa e abre
+    // 4. Busca os dados da conversa PRIMEIRO (Antes de usar)
     const conversa = state.conversationsCache.find(c => c.conversaId == id);
+    
     if (conversa) {
+        // --- PARTE NOVA: ZERA A BOLINHA VISUALMENTE ---
+        const badge = item.querySelector('.badge-unread');
+        if(badge) badge.remove(); // Remove do HTML na hora
+        conversa.naoLidas = 0;    // Atualiza o cache local
+
+        // --- PARTE NOVA: AVISA O BACKEND ---
+        // Não precisa esperar o await aqui, pode ser assíncrono ("fire and forget")
+        apiCall(`/painel/atendimento/conversas/${id}/ler`, 'PATCH'); 
+
+        // --- PARTE DE ABRIR O CHAT ---
+        // Feedback visual de carregamento se for trocar de chat
+        if (state.currentChatId !== conversa.conversaId) {
+             ui.chat.box.innerHTML = '<div style="padding:20px; text-align:center; color:#888">Carregando...</div>';
+        }
+        
         openChat(conversa);
     }
 });
@@ -205,15 +223,25 @@ function renderConversations(list) {
     ui.sidebar.list.innerHTML = '';
     list.forEach(c => {
         const div = document.createElement('div');
-        div.dataset.id = c.conversaId; 
+        div.dataset.id = c.conversaId; // Importante para o clique funcionar
         
-        // Destaque visual CORRETO - compara com state.currentChatId
+        // Define classe ativa se for o chat atual
         div.className = `conversation-item ${state.currentChatId === c.conversaId ? 'active' : ''}`;
-        
+
+        // 1. Prepara os dados (Variáveis primeiro!)
         const colorIndex = parseInt(c.telefoneCliente.replace(/\D/g, '').slice(-1)) || 0;
         const colors = ['#00a884', '#00bcd4', '#ff9800', '#e91e63', '#9c27b0', '#3f51b5'];
         const displayName = c.nomeCliente || formatPhone(c.telefoneCliente);
+        
+        // Lógica da Bolinha Vermelha
+        const badgeHtml = c.naoLidas > 0 
+            ? `<div class="badge-unread">${c.naoLidas}</div>` 
+            : '';
 
+        // Formata data/hora da última mensagem
+        const timeDisplay = c.ultimaMensagem ? formatSmartDate(new Date(c.ultimaMensagem.data)) : '';
+
+        // 2. Monta o HTML (Agora pode usar as variáveis)
         div.innerHTML = `
             <div class="avatar-gen" style="background:${colors[colorIndex % colors.length]}">
                 <span class="material-icons-round">person</span>
@@ -221,11 +249,15 @@ function renderConversations(list) {
             <div class="conv-info">
                 <div class="conv-top">
                     <span class="conv-name" title="${displayName}">${displayName}</span>
-                    <span class="conv-time">${c.ultimaMensagem ? formatSmartDate(new Date(c.ultimaMensagem.data)) : ''}</span>
+                    <span class="conv-time">${timeDisplay}</span>
                 </div>
-                <div class="conv-status">${c.status === 'BOT' ? '🤖 Robô' : '👤 Atendimento'}</div>
+                <div class="conv-bottom">
+                    <span class="conv-last-msg">${c.status === 'BOT' ? '🤖 Robô' : '👤 Atendimento'}</span>
+                    ${badgeHtml}
+                </div>
             </div>
         `;
+        
         ui.sidebar.list.appendChild(div);
     });
 }

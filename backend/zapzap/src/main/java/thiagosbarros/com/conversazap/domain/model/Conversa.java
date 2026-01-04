@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -34,6 +36,9 @@ public class Conversa {
     private LocalDateTime dataInicio;
 
     private LocalDateTime dataFim;
+
+    @OneToMany(mappedBy = "conversa",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Mensagem> mensagens = new ArrayList<>();
 
     protected Conversa() {
     }
@@ -79,6 +84,10 @@ public class Conversa {
 
     public StatusConversa getStatus() {
         return status;
+    }
+
+    public List<Mensagem> getMensagens() {
+        return mensagens;
     }
 
     @Override

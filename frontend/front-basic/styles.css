@@ -259,3 +259,63 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
         pointer-events: none;
     }
 }
+
+/* --- CSS DA BOLINHA DE NOTIFICAÇÃO (Estilo WhatsApp) --- */
+
+/* 1. O Container da linha de baixo (Última msg + Bolinha) */
+.conv-bottom {
+    display: flex;
+    justify-content: space-between; /* Texto na esquerda, Bolinha na direita */
+    align-items: center; /* Centraliza verticalmente */
+    width: 100%;
+    margin-top: 3px;
+}
+
+/* 2. O Texto da mensagem (para não empurrar a bolinha) */
+.conv-last-msg {
+    flex: 1; /* Ocupa o espaço que sobrar */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona "..." se for muito longo */
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-right: 8px; /* Espaço entre o texto e a bolinha */
+}
+
+/* 3. A Bolinha em si (Badge) */
+.badge-unread {
+    background-color: #25D366; /* Verde Oficial do WhatsApp */
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    
+    /* Truque para ficar redonda perfeita */
+    min-width: 20px;   /* Largura mínima */
+    height: 20px;      /* Altura fixa igual a largura */
+    border-radius: 50%; /* Transforma quadrado em círculo */
+    
+    /* Centralizar o número perfeitamente no meio da bolinha */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Sombra leve para destacar */
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    padding: 0 4px; /* Garante que números grandes (100+) não vazem */
+}
+
+/* Add this to your Utilities section */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2); 
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3); 
+}

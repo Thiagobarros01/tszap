@@ -22,7 +22,10 @@ public class UsuarioService {
     private final EmpresaRepository empresaRepository;
     private final SecurityService securityService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, EmpresaRepository empresaRepository, SecurityService securityService) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          PasswordEncoder passwordEncoder,
+                          EmpresaRepository empresaRepository,
+                          SecurityService securityService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.empresaRepository = empresaRepository;
@@ -55,7 +58,7 @@ public class UsuarioService {
 
         return usuarioRepository.findByEmpresaAndAtivoTrue(usuarioLogado.getEmpresa())
                 .stream()
-                .filter(u -> !u.getId().equals(usuarioLogado.getId())) // Remove o próprio usuário da lista
+                .filter(u -> !u.getId().equals(usuarioLogado.getId()))
                 .map(u -> new UsuarioResumoDTO(u.getId(), u.getLogin(), u.getEmail(), u.getRole()))
                 .toList();
     }

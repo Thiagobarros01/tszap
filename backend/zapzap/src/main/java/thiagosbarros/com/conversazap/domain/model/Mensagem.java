@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import thiagosbarros.com.conversazap.domain.enums.OrigemMensagem;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "mensagens")
@@ -30,6 +31,8 @@ public class Mensagem {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    private boolean lida = false;
 
     protected Mensagem() {
     }
@@ -68,4 +71,13 @@ public class Mensagem {
     public Usuario getUsuario() {
         return usuario;
     }
+
+    public boolean isLida() {
+        return lida;
+    }
+
+    public void marcarComoLida(boolean lida) {
+        this.lida = lida;
+    }
+
 }

@@ -50,4 +50,10 @@ public class PainelAtendimentoController {
         return ResponseEntity.ok().build();
     }
 
+    @PatchMapping("/conversas/{idConversa}/ler")
+    public ResponseEntity<Void> marcarMensagensComoLida(@PathVariable Long idConversa) {
+        service.marcarMensagensComoLida(idConversa);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -42,6 +42,7 @@ public class AtendimentoHumanoService {
     }
 
 
+
     @Transactional(readOnly = true)
     public List<ConversaResumoDTO> listarConversasAbertas(){
 
@@ -49,17 +50,27 @@ public class AtendimentoHumanoService {
         Empresa empresa = usuarioLogado.getEmpresa();
 
         return conversaRepository.findByCliente_EmpresaAndStatusNot(empresa, StatusConversa.ENCERRADA)
-                .stream().map(c -> new ConversaResumoDTO(
-                                c.getId(),
-                                c.getCliente().getTelefone(),
-                                c.getCliente().getNome(),
-                                c.getStatus().name(),
-                                c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null,
-                                c.getCliente().getId()
+                .stream().map(c -> {
 
-                )).collect(Collectors.toList());
+                   int qtdMsgNaoLidas =  (int) c.getMensagens().stream().filter(m-> !m.isLida()
+                            && m.getOrigem()
+                           .equals(OrigemMensagem.CLIENTE))
+                           .count();
+
+                         return new ConversaResumoDTO(
+                                    c.getId(),
+                                    c.getCliente().getTelefone(),
+                                    c.getCliente().getNome(),
+                                    c.getStatus().name(),
+                                    c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null,
+                                    c.getCliente().getId(),
+                                    qtdMsgNaoLidas
+                            );
+
+                }).toList();
 
     }
+
 
     @Transactional(readOnly = true)
     public List<MensagemDTO> buscarMensagens(Long conversaId){
@@ -128,6 +139,17 @@ public class AtendimentoHumanoService {
         }
 
         conversa.assumirConversa(usuarioDestino);
+        conversaRepository.save(conversa);
+    }
+
+    public void marcarMensagensComoLida(Long idConversa) {
+        Conversa conversa = conversaRepository.findById(idConversa)
+                .orElseThrow(()-> new ConversaNaoEncontradaException("Conversa não encontrada"));
+
+        conversa.getMensagens().stream().filter(m -> !m.isLida() && m.getOrigem() == OrigemMensagem.CLIENTE )
+                .forEach(m -> m.marcarComoLida(true)
+        );
+
         conversaRepository.save(conversa);
     }
 }

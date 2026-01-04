@@ -10,9 +10,7 @@ import thiagosbarros.com.conversazap.domain.model.Usuario;
 public class SecurityService {
 
     public SecurityService() {
-
     }
-
     public Usuario usuarioLogado() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
