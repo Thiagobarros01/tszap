@@ -41,6 +41,7 @@ const ui = {
     },
     chat: {
         container: document.getElementById('chat-container'),
+        btnBack: document.getElementById('btn-back'), // AGORA VAI EXISTIR
         area: document.querySelector('.chat-area'),
         empty: document.getElementById('empty-state'),
         headerName: document.getElementById('header-name'),
@@ -216,26 +217,51 @@ function openChat(c) {
     ui.chat.headerName.textContent = displayName;
     ui.chat.headerStatus.textContent = c.status;
     
+    // Lógica Desktop e Mobile Unificada
     ui.chat.empty.classList.remove('active');
-    ui.chat.empty.style.display = 'none'; 
+    
+    // Mostra o container do chat
     ui.chat.container.classList.add('active');
     ui.chat.container.style.display = 'flex'; 
 
-    if(window.innerWidth <= 768) ui.sidebar.self.classList.add('hidden');
+    // -> MUDANÇA AQUI: Adiciona classe para animar no mobile
+    ui.views.chat.classList.add('chat-open');
     
     loadMessages(c.conversaId, true);
     renderConversations(state.conversationsCache);
 }
 
+if(ui.chat.btnBack) {
+    ui.chat.btnBack.addEventListener('click', () => {
+        // Remove a classe que mostra o chat, voltando para a lista
+        ui.views.chat.classList.remove('chat-open');
+        
+        // Limpa o chat atual (opcional, se quiser manter o estado pode remover essas linhas)
+        setTimeout(() => {
+            state.currentChatId = null;
+            ui.chat.container.classList.remove('active');
+            renderConversations(state.conversationsCache); // Remove a seleção visual da lista
+        }, 300); // Espera a animação acabar
+    });
+}
+
+// 4. Ajuste no botão Encerrar (btnEnd) para também voltar a tela
 ui.chat.btnEnd.addEventListener('click', async () => {
     if(confirm('Encerrar atendimento?')) {
         await apiCall(`/painel/atendimento/conversas/${state.currentChatId}/encerrar`, 'POST');
+        
+        // UI Updates
         state.currentChatId = null;
+        ui.views.chat.classList.remove('chat-open'); // Fecha no mobile
         ui.chat.container.classList.remove('active');
         ui.chat.container.style.display = 'none';
-        ui.chat.empty.classList.add('active');
-        ui.chat.empty.style.display = 'flex'; 
-        if(window.innerWidth <= 768) ui.sidebar.self.classList.remove('hidden');
+        
+        // Mostra empty state apenas se for desktop
+        if(window.innerWidth > 768) {
+            ui.chat.empty.classList.add('active');
+            ui.chat.empty.style.display = 'flex';
+        }
+
         loadConversations();
         showToast('Atendimento encerrado', 'success');
     }
