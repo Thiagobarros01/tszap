@@ -223,25 +223,30 @@ function renderConversations(list) {
     ui.sidebar.list.innerHTML = '';
     list.forEach(c => {
         const div = document.createElement('div');
-        div.dataset.id = c.conversaId; // Importante para o clique funcionar
-        
-        // Define classe ativa se for o chat atual
+        div.dataset.id = c.conversaId;
         div.className = `conversation-item ${state.currentChatId === c.conversaId ? 'active' : ''}`;
 
-        // 1. Prepara os dados (Variáveis primeiro!)
         const colorIndex = parseInt(c.telefoneCliente.replace(/\D/g, '').slice(-1)) || 0;
         const colors = ['#00a884', '#00bcd4', '#ff9800', '#e91e63', '#9c27b0', '#3f51b5'];
         const displayName = c.nomeCliente || formatPhone(c.telefoneCliente);
         
-        // Lógica da Bolinha Vermelha
         const badgeHtml = c.naoLidas > 0 
             ? `<div class="badge-unread">${c.naoLidas}</div>` 
             : '';
 
-        // Formata data/hora da última mensagem
         const timeDisplay = c.ultimaMensagem ? formatSmartDate(new Date(c.ultimaMensagem.data)) : '';
 
-        // 2. Monta o HTML (Agora pode usar as variáveis)
+        // --- AQUI ESTÁ A MÁGICA ---
+        // Se tiver atendente, mostra o nome dele. Se não, mostra só o status.
+        let statusDisplay = '';
+        if (c.status === 'BOT') {
+            statusDisplay = '🤖 Robô';
+        } else {
+            // Exemplo: "👤 Atend. (Thiago)"
+            const nomeAtendente = c.nomeAtendente ? `(${c.nomeAtendente})` : '';
+            statusDisplay = `👤 Atend. <span style="font-weight:600; color:#00a884">${nomeAtendente}</span>`;
+        }
+
         div.innerHTML = `
             <div class="avatar-gen" style="background:${colors[colorIndex % colors.length]}">
                 <span class="material-icons-round">person</span>
@@ -252,7 +257,7 @@ function renderConversations(list) {
                     <span class="conv-time">${timeDisplay}</span>
                 </div>
                 <div class="conv-bottom">
-                    <span class="conv-last-msg">${c.status === 'BOT' ? '🤖 Robô' : '👤 Atendimento'}</span>
+                    <span class="conv-last-msg">${statusDisplay}</span>
                     ${badgeHtml}
                 </div>
             </div>
@@ -265,7 +270,16 @@ function renderConversations(list) {
 function openChat(c) {
     state.currentChatId = c.conversaId;
     const displayName = c.nomeCliente || formatPhone(c.telefoneCliente);
+
     ui.chat.headerName.textContent = displayName;
+
+    // NOVO: Mostra status E quem está atendendo
+    let statusText = c.status;
+    if (c.status === 'HUMANO' && c.nomeAtendente) {
+        statusText += ` • Atendente: ${c.nomeAtendente}`;
+    }
+    ui.chat.headerStatus.textContent = statusText;
+
     ui.chat.headerStatus.textContent = c.status;
     
     // IMPORTANTE: Garantir que o empty state esteja escondido
@@ -378,10 +392,18 @@ function renderMessages(msgs, forceScroll) {
         const isMe = m.origem === 'HUMANO' || m.origem === 'BOT';
         const div = document.createElement('div');
         div.className = `message ${isMe ? 'sent' : 'received'}`;
+
+        const nameColor = isMe ? '#e542a3' : '#00a884';
+
+        const senderName = !isMe ? clientName : (m.nomeAtendente || 'Eu');
+
+        const showName = m.origem !== 'BOT';
         
         div.innerHTML = `
-            ${!isMe ? `<div style="font-size:0.7rem; font-weight:bold; color:#e542a3; margin-bottom:2px">${escapeHtml(clientName)}</div>` : ''}
+            ${showName ? `<div style="font-size:0.75rem; font-weight:bold; color:${nameColor}; margin-bottom:2px">${escapeHtml(senderName)}</div>` : ''}
+            
             <div class="msg-text">${escapeHtml(m.texto)}</div>
+            
             <div class="msg-meta">
                 ${date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
                 ${isMe ? '<span class="material-icons-round" style="font-size:14px; margin-left:2px">done_all</span>' : ''}
