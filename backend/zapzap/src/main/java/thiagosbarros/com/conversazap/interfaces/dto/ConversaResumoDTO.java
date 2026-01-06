@@ -7,15 +7,17 @@ public class ConversaResumoDTO {
     private String nomeCliente;
     private String status;
     private Long usuarioId;
+    private String nomeAtendente;
     private Long clienteId;
     private int naoLidas;
 
-    public ConversaResumoDTO(Long conversaId, String telefoneCliente, String nomeCliente, String status, Long usuarioId, Long clienteId, int naoLidas) {
+    public ConversaResumoDTO(Long conversaId, String telefoneCliente, String nomeCliente, String status, Long usuarioId,String nomeAtendente, Long clienteId, int naoLidas) {
         this.conversaId = conversaId;
         this.telefoneCliente = telefoneCliente;
         this.nomeCliente = nomeCliente;
         this.status = status;
         this.usuarioId = usuarioId;
+        this.nomeAtendente = nomeAtendente;
         this.clienteId = clienteId;
         this.naoLidas = naoLidas;
 
@@ -47,5 +49,9 @@ public class ConversaResumoDTO {
 
     public int getNaoLidas() {
         return naoLidas;
+    }
+
+    public String getNomeAtendente() {
+        return nomeAtendente;
     }
 }

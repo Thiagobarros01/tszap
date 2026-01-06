@@ -1,6 +1,7 @@
 package thiagosbarros.com.conversazap.domain.model;
 
 import jakarta.persistence.*;
+import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,9 @@ public class Conversa {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusConversa status;
+
+    @Enumerated(EnumType.STRING)
+    private Departamento departamento;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
@@ -88,6 +92,14 @@ public class Conversa {
 
     public List<Mensagem> getMensagens() {
         return mensagens;
+    }
+
+    public Departamento getDepartamento() {
+        return departamento;
+    }
+
+    public void definirDepartamento(Departamento departamento) {
+        this.departamento = departamento;
     }
 
     @Override

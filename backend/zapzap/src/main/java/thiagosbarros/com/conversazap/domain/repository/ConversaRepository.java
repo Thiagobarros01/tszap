@@ -1,6 +1,7 @@
 package thiagosbarros.com.conversazap.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 import thiagosbarros.com.conversazap.domain.model.Cliente;
 import thiagosbarros.com.conversazap.domain.model.Conversa;
@@ -15,6 +16,12 @@ public interface ConversaRepository extends JpaRepository<Conversa, Long> {
     Optional<Conversa> findByClienteAndStatusIn(
             Cliente cliente,
             Iterable<StatusConversa> status
+    );
+
+    List<Conversa> findByCliente_EmpresaAndStatusNotAndDepartamento(
+            Empresa empresa,
+            StatusConversa status,
+            Departamento departamento
     );
 
     List<Conversa> findByCliente_EmpresaAndStatusNot(Empresa clienteEmpresa, StatusConversa status);

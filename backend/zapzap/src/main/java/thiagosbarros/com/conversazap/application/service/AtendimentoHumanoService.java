@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import thiagosbarros.com.conversazap.application.exception.BusinessException;
 import thiagosbarros.com.conversazap.application.exception.ConversaNaoEncontradaException;
 import thiagosbarros.com.conversazap.domain.enums.OrigemMensagem;
+import thiagosbarros.com.conversazap.domain.enums.Role;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 import thiagosbarros.com.conversazap.domain.model.Conversa;
 import thiagosbarros.com.conversazap.domain.model.Empresa;
@@ -49,8 +50,18 @@ public class AtendimentoHumanoService {
         Usuario usuarioLogado = securityService.usuarioLogado();
         Empresa empresa = usuarioLogado.getEmpresa();
 
-        return conversaRepository.findByCliente_EmpresaAndStatusNot(empresa, StatusConversa.ENCERRADA)
-                .stream().map(c -> {
+        List<Conversa> conversas;
+
+        if(usuarioLogado.getRole() == Role.ADMIN || usuarioLogado.getDepartamento() == null) {
+            conversas = conversaRepository.findByCliente_EmpresaAndStatusNot(empresa, StatusConversa.ENCERRADA);
+        } else {
+          conversas = conversaRepository.findByCliente_EmpresaAndStatusNotAndDepartamento(
+                    empresa,
+                    StatusConversa.ENCERRADA,
+                    usuarioLogado.getDepartamento());
+        }
+        return
+                conversas.stream().map(c -> {
 
                    int qtdMsgNaoLidas =  (int) c.getMensagens().stream().filter(m-> !m.isLida()
                             && m.getOrigem()
@@ -63,6 +74,7 @@ public class AtendimentoHumanoService {
                                     c.getCliente().getNome(),
                                     c.getStatus().name(),
                                     c.getUsuarioAtual() != null ? c.getUsuarioAtual().getId() : null,
+                                    c.getUsuarioAtual() != null ? c.getUsuarioAtual().getLogin() : null,
                                     c.getCliente().getId(),
                                     qtdMsgNaoLidas
                             );
