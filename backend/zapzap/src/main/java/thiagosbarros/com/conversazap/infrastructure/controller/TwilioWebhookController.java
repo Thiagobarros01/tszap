@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import thiagosbarros.com.conversazap.application.command.ProcessarMensagemCommand;
 import thiagosbarros.com.conversazap.application.usecase.ProcessarMensagemUseCase;
 import thiagosbarros.com.conversazap.interfaces.RespostaMensagemDTO;
 import thiagosbarros.com.conversazap.interfaces.WebhookMensagemDTO;
@@ -32,12 +33,14 @@ public class TwilioWebhookController {
         String body = params.getOrDefault("Body", "").trim();
 
 
-        WebhookMensagemDTO dto = new WebhookMensagemDTO();
-        dto.setTelefoneCliente(limparTelefone(from));
-        dto.setTelefoneEmpresa(limparTelefone(to));
-        dto.setMensagem(body);
+        ProcessarMensagemCommand command = new ProcessarMensagemCommand(
+                limparTelefone(from),
+                limparTelefone(to),
+                body
+        );
 
-        RespostaMensagemDTO resposta = usecase.executar(dto);
+
+        RespostaMensagemDTO resposta = usecase.executar(command);
 
 
         String mensagemSegura = resposta.getResposta()

@@ -3,7 +3,7 @@ package thiagosbarros.com.conversazap.application.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import thiagosbarros.com.conversazap.application.dto.UsuarioDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
 import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontrada;
 import thiagosbarros.com.conversazap.application.exception.UsuarioNaoEncontradoException;
 import thiagosbarros.com.conversazap.domain.model.Empresa;

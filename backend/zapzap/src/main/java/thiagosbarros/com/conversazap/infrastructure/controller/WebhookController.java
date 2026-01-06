@@ -2,6 +2,7 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import thiagosbarros.com.conversazap.application.command.ProcessarMensagemCommand;
 import thiagosbarros.com.conversazap.application.usecase.ProcessarMensagemUseCase;
 import thiagosbarros.com.conversazap.interfaces.RespostaMensagemDTO;
 import thiagosbarros.com.conversazap.interfaces.WebhookMensagemDTO;
@@ -20,6 +21,13 @@ public class WebhookController {
     public ResponseEntity<RespostaMensagemDTO> receberMensagem(
             @RequestBody WebhookMensagemDTO dto
     ) {
-        return ResponseEntity.ok(useCase.executar(dto));
+
+        ProcessarMensagemCommand command = new ProcessarMensagemCommand(
+                dto.getTelefoneEmpresa(),
+                dto.getTelefoneCliente(),
+                dto.getMensagem()
+        );
+
+        return ResponseEntity.ok(useCase.executar(command));
     }
 }

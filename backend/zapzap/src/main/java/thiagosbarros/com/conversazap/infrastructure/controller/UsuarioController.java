@@ -3,7 +3,7 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import thiagosbarros.com.conversazap.application.dto.UsuarioDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
 import thiagosbarros.com.conversazap.application.service.UsuarioService;
 import thiagosbarros.com.conversazap.interfaces.dto.UsuarioResumoDTO;
 
