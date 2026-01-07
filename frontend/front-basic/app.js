@@ -465,7 +465,7 @@ async function loadClientsTable() {
             `;
         });
     } else {
-        tbody.innerHTML = '<tr><td colspan="3">Erro ao carregar (Verifique se o backend tem GET /clientes).</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3">Erro ao carregar os clientes.</td></tr>';
     }
 }
 
