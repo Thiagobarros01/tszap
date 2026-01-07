@@ -68,7 +68,26 @@ body {
 /* VIEW CHAT: SIDEBAR + CHAT AREA */
 #view-chat.active { display: grid; grid-template-columns: 350px 1fr; width: 100%; }
 
-.sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; }
+
+
+/* Dentro do @media (max-width: 768px) */
+    
+    .sidebar { 
+        /* Tira o absolute que estava quebrando o layout */
+        position: relative !important; 
+        
+        /* Força ocupar exatamente a altura disponível */
+        width: 100%; 
+        height: 100% !important; 
+        
+        display: flex; 
+        flex-direction: column;
+        z-index: 10;
+        background-color: var(--bg-sidebar); 
+        
+        /* Garante que não vaze nada */
+        overflow: hidden; 
+    }
 .sidebar-header { height: 64px; padding: 0 16px; background: var(--bg-app); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .user-pill { display: flex; align-items: center; gap: 12px; }
 .user-avatar-small { width: 36px; height: 36px; background: #dfe3e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; }
@@ -77,7 +96,14 @@ body {
 #search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-app); outline: none; }
 #search-input:focus { background: #fff; border-color: var(--primary); }
 
-.conversation-list { flex: 1; overflow-y: auto; min-height: 0;}
+.conversation-list {
+        flex: 1; /* Ocupa todo o espaço que sobra (Header e busca ficam em cima) */
+        overflow-y: auto; /* Habilita o scroll */
+        height: 0; /* O SEGREDO: Força o navegador a recalcular a altura */
+        min-height: 0;
+        padding-bottom: 80px;
+        -webkit-overflow-scrolling: touch;
+    }
 .conversation-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 15px; position: relative; }
 .conversation-item:hover { background: #f5f6f6; }
 .conversation-item.active { background: #f0f2f5; border-left: 4px solid var(--primary); }
@@ -165,12 +191,12 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
 @media (max-width: 768px) {
     .mobile-only { display: flex; } /* Mostra o botão voltar */
 
-    /* Layout principal vira coluna */
+    /* 1. Layout Principal vira Coluna Invertida (Nav embaixo) */
     #app-screen.active { 
-        flex-direction: column-reverse; /* Nav embaixo */
+        flex-direction: column-reverse; 
     }
 
-    /* Barra de Navegação no estilo App Bar (Fundo) */
+    /* 2. Barra de Navegação Fixa no Rodapé */
     .nav-rail { 
         width: 100%; 
         height: 60px; 
@@ -180,64 +206,96 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
         flex-shrink: 0;
         border-top: 1px solid var(--border);
         z-index: 1000;
+        background: #202c33; /* Garante fundo para não ver através */
     }
     
     .nav-brand, .nav-footer { display: none; }
     .nav-btn { margin: 0; }
     .nav-items { 
-        display: flex; 
-        width: 100%; 
-        justify-content: space-around; 
-        align-items: center; 
+        display: flex; width: 100%; justify-content: space-around; align-items: center; 
     }
 
- .content-area { 
-        height: calc(100dvh - 60px); /* <--- MUDE DE vh PARA dvh */
+    /* 3. Área de Conteúdo (Ocupa o resto da tela) */
+    .content-area { 
+        height: calc(100dvh - 60px); /* Altura total menos a barra de navegação */
         width: 100%;
+        position: relative; /* Necessário para os absolutos dentro dele */
     }
-    /* Chat View - Comportamento de troca de tela */
-    #view-chat.active { 
+
+    /* 4. Views (Containers) */
+    #view-chat.active, #view-clients.active { 
         display: flex; 
         position: relative; 
         overflow: hidden;
+        height: 100%; /* Força altura total do pai */
+        width: 100%;
     }
 
-    /* Sidebar (Lista) ocupa tudo */
+    /* 5. SIDEBAR (Lista de Conversas) - CORREÇÃO DE ROLAGEM */
     .sidebar { 
         width: 100%; 
         display: flex; 
-        position: absolute; 
-        top: 0; left: 0; height: 100%; z-index: 10;
+        position: absolute; /* Sobrepõe tudo inicialmente */
+        top: 0; 
+        left: 0; 
+        bottom: 0;    /* <--- A MÁGICA: Gruda no topo e no fundo */
+        height: auto; /* <--- Deixa o top/bottom mandarem na altura */
+        z-index: 10;
         transition: transform 0.3s ease;
+        background-color: var(--bg-sidebar); 
+        flex-direction: column;
     }
 
-    /* Chat Area ocupa tudo */
-   .chat-area { 
-    /* ... mantenha o background e outros ... */
-    width: 100%; 
-    height: 100dvh; /* <--- MUDAR AQUI PARA dvh */
-    overflow: hidden; 
-}
+    .conversation-list {
+        padding-bottom: 80px; /* Espaço para não cortar o último item */
+        -webkit-overflow-scrolling: touch; /* Rolagem lisa no celular */
+        min-height: 0;
+        flex: 1; /* Ocupa todo o espaço sobrando */
+        overflow-y: auto;
+    }
 
-    /* Classes de controle de visibilidade */
-    /* Quando o chat está aberto */
+    /* 6. CHAT AREA (Tela de Mensagem) */
+    .chat-area { 
+        width: 100%; 
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        height: 100%; /* Ocupa 100% da content-area */
+        z-index: 20;
+        background-color: var(--bg-chat);
+        transform: translateX(100%); /* Escondido por padrão (fora da tela à direita) */
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 7. Animações de Troca de Tela (Abre o Chat) */
     #view-chat.chat-open .sidebar {
-        transform: translateX(-20%); /* Efeito visual leve */
+        transform: translateX(-20%); /* Lista desliza um pouco para esquerda */
         opacity: 0;
-        pointer-events: none;
+        pointer-events: none; /* Impede clique na lista invisível */
     }
     
     #view-chat.chat-open .chat-area {
         transform: translateX(0); /* Chat entra na tela */
     }
     
-    /* Esconde o empty state no mobile para não sobrepor a lista */
+    /* 8. Ajustes Finos */
     .empty-state { display: none !important; }
 
-    /* Ajuste da tabela de clientes */
-    #view-clients.active { padding: 15px; }
+    #view-clients.active { padding: 15px; overflow-y: auto; }
+    
+    /* Esconde colunas menos importantes na tabela mobile */
     .data-table th:nth-child(2), 
-    .data-table td:nth-child(2) { display: none; } /* Esconde telefone na tabela mobile se ficar apertado */
+    .data-table td:nth-child(2) { display: none; }
+
+    /* Ajuste de texto na lista */
+    .conv-last-msg {
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 /* UTILITARIOS */

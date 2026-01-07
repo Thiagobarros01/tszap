@@ -201,13 +201,23 @@ ui.sidebar.list.addEventListener('click', (e) => {
 
 // --- CONVERSAS ---
 async function loadConversations() {
-    const res = await apiCall('/painel/atendimento/conversas');
-    if(!res) return;
-    const list = await res.json();
-    
-    if(JSON.stringify(list) !== JSON.stringify(state.conversationsCache)) {
-        state.conversationsCache = list;
-        renderConversations(list);
+    try {
+        const res = await apiCall('/painel/atendimento/conversas');
+        if(!res) return;
+        
+        if (res.status === 200) {
+            const list = await res.json();
+            
+            // Verifica se houve mudanças significativas
+            const hasChanged = JSON.stringify(list) !== JSON.stringify(state.conversationsCache);
+            
+            if(hasChanged) {
+                state.conversationsCache = list;
+                renderConversations(list);
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar conversas:', error);
     }
 }
 
@@ -236,15 +246,14 @@ function renderConversations(list) {
 
         const timeDisplay = c.ultimaMensagem ? formatSmartDate(new Date(c.ultimaMensagem.data)) : '';
 
-        // --- AQUI ESTÁ A MÁGICA ---
-        // Se tiver atendente, mostra o nome dele. Se não, mostra só o status.
-        let statusDisplay = '';
+        // CORREÇÃO: Simplifique o status para evitar tags HTML
+        let statusText = '';
         if (c.status === 'BOT') {
-            statusDisplay = '🤖 Robô';
+            statusText = '🤖 Robô';
+        } else if (c.nomeAtendente) {
+            statusText = `👤 ${c.nomeAtendente}`;
         } else {
-            // Exemplo: "👤 Atend. (Thiago)"
-            const nomeAtendente = c.nomeAtendente ? `(${c.nomeAtendente})` : '';
-            statusDisplay = `👤 Atend. <span style="font-weight:600; color:#00a884">${nomeAtendente}</span>`;
+            statusText = '👤 Atendimento';
         }
 
         div.innerHTML = `
@@ -257,7 +266,7 @@ function renderConversations(list) {
                     <span class="conv-time">${timeDisplay}</span>
                 </div>
                 <div class="conv-bottom">
-                    <span class="conv-last-msg">${statusDisplay}</span>
+                    <span class="conv-last-msg">${statusText}</span>
                     ${badgeHtml}
                 </div>
             </div>
@@ -273,15 +282,18 @@ function openChat(c) {
 
     ui.chat.headerName.textContent = displayName;
 
-    // NOVO: Mostra status E quem está atendendo
-    let statusText = c.status;
-    if (c.status === 'HUMANO' && c.nomeAtendente) {
-        statusText += ` • Atendente: ${c.nomeAtendente}`;
+    // CORREÇÃO: Mostrar status de forma mais limpa
+    let statusText = '';
+    if (c.status === 'BOT') {
+        statusText = '🤖 Robô';
+    } else if (c.nomeAtendente) {
+        statusText = `👤 ${c.nomeAtendente}`;
+    } else {
+        statusText = '👤 Aguardando atendimento';
     }
+    
     ui.chat.headerStatus.textContent = statusText;
 
-    ui.chat.headerStatus.textContent = c.status;
-    
     // IMPORTANTE: Garantir que o empty state esteja escondido
     ui.chat.empty.classList.remove('active');
     ui.chat.empty.style.display = 'none';
@@ -491,6 +503,7 @@ async function openClientModalFromChat() {
     }
     await openEditClientModal(currentChat.clienteId);
 }
+
 
 // Chama quando clica na tabela de clientes (window para ser acessível do HTML)
 window.editClient = async function(id) {
@@ -704,6 +717,8 @@ if (ui.modal.confirm) {
         }
     });
 }
+
+
 
 // 3. Fechar Modal
 if (ui.modal.close) ui.modal.close.onclick = () => ui.modal.el.classList.remove('active');
