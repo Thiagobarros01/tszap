@@ -3,6 +3,7 @@ package thiagosbarros.com.conversazap.application.service;
 import jakarta.transaction.Transactional;
 import thiagosbarros.com.conversazap.domain.enums.OrigemMensagem;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
+import thiagosbarros.com.conversazap.domain.gateway.EnvioMensagemGateway;
 import thiagosbarros.com.conversazap.domain.model.*;
 import thiagosbarros.com.conversazap.domain.repository.*;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class AtendimentoService {
     private final BotService botService;
     private final HorarioAtendimentoService horarioAtendimentoService;
     private final MensagemAutomaticaService mensagemAutomaticaService;
+    private final EnvioMensagemGateway  envioMensagemGateway;
 
     public AtendimentoService(
             EmpresaRepository empresaRepository,
@@ -30,7 +32,8 @@ public class AtendimentoService {
             MensagemRepository mensagemRepository,
             BotService botService,
             HorarioAtendimentoService horarioAtendimentoService,
-            MensagemAutomaticaService mensagemAutomaticaService
+            MensagemAutomaticaService mensagemAutomaticaService,
+            EnvioMensagemGateway envioMensagemGateway
             ) {
         this.empresaRepository = empresaRepository;
         this.clienteRepository = clienteRepository;
@@ -39,7 +42,7 @@ public class AtendimentoService {
         this.botService = botService;
         this.horarioAtendimentoService = horarioAtendimentoService;
         this.mensagemAutomaticaService = mensagemAutomaticaService;
-
+        this.envioMensagemGateway = envioMensagemGateway;
     }
 
     @Transactional
@@ -72,6 +75,9 @@ public class AtendimentoService {
 
         if (respostaBot != null) {
             mensagemRepository.save(new Mensagem(conversa, OrigemMensagem.BOT, respostaBot));
+
+            envioMensagemGateway.enviarMensagem(telefoneCliente,respostaBot);
+
             return respostaBot;
         }
 

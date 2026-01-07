@@ -34,8 +34,8 @@ public class TwilioWebhookController {
 
 
         ProcessarMensagemCommand command = new ProcessarMensagemCommand(
-                limparTelefone(from),
                 limparTelefone(to),
+                limparTelefone(from),
                 body
         );
 
