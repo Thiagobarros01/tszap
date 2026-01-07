@@ -248,25 +248,28 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 /* Adicione no final do seu styles.css */
+/* Adicione isso ao seu styles.css, dentro do @media (max-width: 768px) */
 @media (max-width: 768px) {
-    /* Garantir que o chat container esteja sempre visível quando ativo */
-    .chat-container.active {
-        display: flex !important;
+    .conv-last-msg {
+        font-size: 0.8rem;
+        white-space: normal;
+        line-height: 1.2;
+        max-height: 2.4em; /* Mostra até 2 linhas */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
     }
     
-    /* Garantir que animações sejam suaves */
-    .sidebar, .chat-area {
-        transition: transform 0.3s ease, opacity 0.3s ease;
+    .conv-name {
+        font-size: 0.9rem;
     }
     
-    /* Quando o chat está aberto, esconder a sidebar completamente */
-    #view-chat.chat-open .sidebar {
-        transform: translateX(-100%);
-        opacity: 0;
-        pointer-events: none;
+    .conv-time {
+        font-size: 0.75rem;
     }
 }
-
 /* --- CSS DA BOLINHA DE NOTIFICAÇÃO (Estilo WhatsApp) --- */
 
 /* 1. O Container da linha de baixo (Última msg + Bolinha) */
