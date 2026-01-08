@@ -793,23 +793,34 @@ if(formUser) {
 
 // --- FUNÇÕES QUE FALTAVAM (Cole no final do app.js) ---
 
-// 1. Carrega o Dashboard
-function loadDashboard() {
-    // Calcula números baseados nas conversas carregadas
-    const conversas = state.conversationsCache || [];
-    
-    const total = conversas.length;
-    const emAtendimento = conversas.filter(c => c.status === 'HUMANO').length;
-    const naFila = conversas.filter(c => c.status === 'BOT').length;
-
-    // Preenche os cards
+// --- DASHBOARD (Conectado ao Backend) ---
+async function loadDashboard() {
+    // Elementos da tela
     const elTotal = document.getElementById('dash-total');
     const elActive = document.getElementById('dash-active');
     const elWaiting = document.getElementById('dash-waiting');
 
-    if(elTotal) elTotal.textContent = total;
-    if(elActive) elActive.textContent = emAtendimento;
-    if(elWaiting) elWaiting.textContent = naFila;
+    // Se a tela não tiver os elementos (bug de renderização), aborta
+    if (!elTotal || !elActive || !elWaiting) return;
+
+    try {
+        // Chama o endpoint real que criamos via UseCase -> Service -> Repository
+        const res = await apiCall('/painel/atendimento/dashboard');
+        
+        if (res && res.ok) {
+            const dados = await res.json();
+            
+            // Atualiza a tela com os dados REAIS do banco
+            // Usamos '|| 0' para garantir que não apareça "undefined" se vier null
+            elTotal.textContent = dados.totalConversas || 0;
+            elActive.textContent = dados.emAtendimento || 0;
+            elWaiting.textContent = dados.filaEspera || 0;
+        } else {
+            console.error('Falha ao buscar dados do dashboard:', res.status);
+        }
+    } catch (e) {
+        console.error('Erro de conexão no dashboard:', e);
+    }
 }
 
 // 2. Carrega a Tabela de Equipe (Busca do Backend)
