@@ -40,12 +40,14 @@ public class Usuario {
     protected Usuario() {
     }
 
-    public Usuario(String login, String email, String senha, Role role, Empresa empresa) {
+    public Usuario(String login, String email, String senha, Role role, Empresa empresa, Departamento departamento) {
         this.login = login;
         this.email = email;
         this.senha = senha;
         this.role = role;
         this.empresa = empresa;
+        this.departamento = departamento;
+
     }
 
 

@@ -33,12 +33,15 @@ public class UsuarioService {
     }
     @Transactional
     public void salvar(UsuarioDTO dto){
+        Usuario usuarioLogado = securityService.usuarioLogado();
+        Long idEmpresaUsuario = usuarioLogado.getEmpresa().getId();
+
         String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
 
-        Empresa empresa = empresaRepository.findById(dto.getIdEmpresa())
+        var empresa = empresaRepository.findById(idEmpresaUsuario)
                 .orElseThrow(() -> new EmpresaNaoEncontradaException("Empresa não encontrada"));
 
-        Usuario usuario = new Usuario(dto.getLogin(),dto.getEmail(),senhaCriptografada,dto.getRole(),empresa);
+        Usuario usuario = new Usuario(dto.getLogin(),dto.getEmail(),senhaCriptografada,dto.getRole(),empresa,dto.getDepartamento());
         usuarioRepository.save(usuario);
     }
 
@@ -59,7 +62,7 @@ public class UsuarioService {
         return usuarioRepository.findByEmpresaAndAtivoTrue(usuarioLogado.getEmpresa())
                 .stream()
                 .filter(u -> !u.getId().equals(usuarioLogado.getId()))
-                .map(u -> new UsuarioResumoDTO(u.getId(), u.getLogin(), u.getEmail(), u.getRole()))
+                .map(u -> new UsuarioResumoDTO(u.getId(), u.getLogin(), u.getEmail(), u.getRole(),u.getDepartamento()))
                 .toList();
     }
 
@@ -69,7 +72,8 @@ public class UsuarioService {
                         u.getId(),
                         u.getLogin(),
                         u.getEmail(),
-                        u.getRole()
+                        u.getRole(),
+                        u.getDepartamento()
                 ))
                 .orElseThrow(()-> new UsuarioNaoEncontradoException("Usuario não encontrado!"));
     }

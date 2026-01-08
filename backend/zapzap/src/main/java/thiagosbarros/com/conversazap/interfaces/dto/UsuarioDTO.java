@@ -2,6 +2,7 @@ package thiagosbarros.com.conversazap.interfaces.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.Role;
 
 public class UsuarioDTO {
@@ -12,16 +13,24 @@ public class UsuarioDTO {
     @Email
     private String email;
 
+    private Departamento departamento;
+
     private Role role;
 
     private Long idEmpresa;
 
-    public UsuarioDTO(String login, String senha, String email, Role role, Long idEmpresa) {
+    public UsuarioDTO(){
+
+    }
+
+    public UsuarioDTO(String login, String senha, String email, Role role, Long idEmpresa, Departamento departamento) {
         this.login = login;
         this.senha = senha;
         this.email = email;
         this.role = role;
         this.idEmpresa = idEmpresa;
+        this.departamento = departamento;
+
     }
 
     public String getLogin() {
@@ -41,5 +50,8 @@ public class UsuarioDTO {
     }
     public Long getIdEmpresa() {
         return idEmpresa;
+    }
+    public Departamento getDepartamento() {
+        return departamento;
     }
 }
