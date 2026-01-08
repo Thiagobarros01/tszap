@@ -22,7 +22,9 @@ const ui = {
     // Novas Views (Abas)
     views: {
         chat: document.getElementById('view-chat'),
-        clients: document.getElementById('view-clients')
+        clients: document.getElementById('view-clients'),
+        dashboard: document.getElementById('view-dashboard'), // <--- NOVO
+        team: document.getElementById('view-team')            // <--- NOVO
     },
     login: { 
         form: document.getElementById('login-form'), 
@@ -103,6 +105,15 @@ window.navigate = function(viewName) {
     const btn = document.querySelector(`.nav-btn[onclick="navigate('${viewName}')"]`);
     if(btn) btn.classList.add('active');
 
+    if(viewName === 'chat') {
+        loadConversations(); 
+    }
+
+    // CARREGA DADOS ESPECÍFICOS
+    if(viewName === 'clients') loadClientsTable();
+    if(viewName === 'team') loadTeamTable();       // <--- NOVO
+    if(viewName === 'dashboard') loadDashboard();  // <--- NOVO
+
     // 5. Se for aba de clientes, carrega a tabela
     if(viewName === 'clients') loadClientsTable();
 };
@@ -143,7 +154,7 @@ ui.sidebar.btnLogout.addEventListener('click', () => {
 function initApp() {
     showScreen('app');
     // Começa no chat
-    navigate('chat');
+    navigate('dashboard');
     
     document.getElementById('display-username').textContent = state.userLogin || 'Você';
     
@@ -201,6 +212,9 @@ ui.sidebar.list.addEventListener('click', (e) => {
 
 // --- CONVERSAS ---
 async function loadConversations() {
+
+    if (!document.getElementById('view-chat').classList.contains('active')) return;
+
     try {
         const res = await apiCall('/painel/atendimento/conversas');
         if(!res) return;

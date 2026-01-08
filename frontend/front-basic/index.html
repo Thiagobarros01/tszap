@@ -36,16 +36,23 @@
             <div class="nav-brand">
                 <span class="material-icons-round">bolt</span>
             </div>
-            
+
             <div class="nav-items">
+              <button class="nav-btn" onclick="navigate('dashboard')" title="Início">
+                    <span class="material-icons-round">home</span>
+              </button>
                 <button class="nav-btn active" onclick="navigate('chat')" title="Atendimento">
                     <span class="material-icons-round">chat</span>
                 </button>
-                <button class="nav-btn" onclick="navigate('clients')" title="Gestão de Clientes">
+                
+                <button class="nav-btn" onclick="navigate('clients')" title="Clientes">
                     <span class="material-icons-round">people</span>
                 </button>
-            </div>
 
+                <button class="nav-btn" onclick="navigate('team')" title="Gerenciar Equipe">
+                    <span class="material-icons-round">badge</span>
+                </button>
+            </div>
 
             <div class="nav-footer">
                 <button id="btn-logout" class="nav-btn logout" title="Sair">
@@ -55,7 +62,6 @@
         </nav>
 
         <div class="content-area">
-            
             <div id="view-chat" class="view active">
                 <aside class="sidebar">
                     <header class="sidebar-header">
@@ -69,8 +75,9 @@
                         <input type="text" id="search-input" placeholder="Buscar conversa...">
                     </div>
                     <div id="conversation-list" class="conversation-list"></div>
+                    
                 </aside>
-
+                
                 <main class="chat-area">
                     <div id="empty-state" class="empty-state active">
                         <span class="material-icons-round" style="font-size:48px; opacity:0.3">chat</span>
@@ -128,9 +135,72 @@
                             </tbody>
                     </table>
                 </div>
+                
+            </div>
+            <div id="view-dashboard" class="view">
+                <div class="page-header">
+                    <h2>Visão Geral</h2>
+                    <div style="font-size: 0.9rem; color: #666">Resumo do dia</div>
+                </div>
+                
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:#e3f2fd; color:#1976d2">
+                            <span class="material-icons-round">forum</span>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>Conversas Hoje</h3>
+                            <span class="kpi-value" id="dash-total">0</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:#e8f5e9; color:#2e7d32">
+                            <span class="material-icons-round">support_agent</span>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>Em Atendimento</h3>
+                            <span class="kpi-value" id="dash-active">0</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background:#fff3e0; color:#ef6c00">
+                            <span class="material-icons-round">schedule</span>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>Fila de Espera</h3>
+                            <span class="kpi-value" id="dash-waiting">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <div id="view-team" class="view">
+                <div class="page-header">
+                    <h2>Gestão de Equipe</h2>
+                    <button class="btn-primary" onclick="openNewUserModal()">
+                        <span class="material-icons-round">person_add</span> Novo Usuário
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nome / Login</th>
+                                <th>Perfil</th>
+                                <th>Departamento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="team-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+        
     </div>
 
     <div id="transfer-modal" class="modal-overlay">
