@@ -154,7 +154,7 @@ ui.sidebar.btnLogout.addEventListener('click', () => {
 function initApp() {
     showScreen('app');
     // Começa no chat
-    navigate('dashboard');
+    navigate('chat');
     
     document.getElementById('display-username').textContent = state.userLogin || 'Você';
     
@@ -728,6 +728,63 @@ if (ui.modal.confirm) {
         } finally {
             btn.textContent = 'Confirmar';
             btn.disabled = false;
+        }
+    });
+}
+
+// --- NOVO USUÁRIO (ADMIN) ---
+
+// Abrir Modal
+function openNewUserModal() {
+    document.getElementById('new-user-modal').classList.add('active');
+}
+
+// Fechar Modal
+function closeNewUserModal() {
+    document.getElementById('new-user-modal').classList.remove('active');
+}
+
+// Enviar Formulário
+const formUser = document.getElementById('new-user-form');
+if(formUser) {
+    formUser.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const login = document.getElementById('new-user-login').value;
+        const senha = document.getElementById('new-user-pass').value;
+        const role = document.getElementById('new-user-role').value;
+        const departamento = document.getElementById('new-user-dept').value;
+
+        // Monta o objeto igual o Java espera (UsuarioDTO)
+        const body = {
+            login: login,
+            senha: senha,
+            role: role,
+            departamento: departamento
+        };
+
+        const btn = formUser.querySelector('button');
+        const txtOriginal = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Cadastrando...';
+
+        try {
+            const res = await apiCall('/usuarios', 'POST', body);
+            
+            if(res && res.ok) {
+                showToast('Usuário criado com sucesso!', 'success');
+                closeNewUserModal();
+                formUser.reset();
+                loadTeamTable(); // Recarrega a tabela pra mostrar o novo
+            } else {
+                showToast('Erro ao criar usuário. Tente outro login.', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Erro de conexão.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = txtOriginal;
         }
     });
 }

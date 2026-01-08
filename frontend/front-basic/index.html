@@ -257,6 +257,50 @@
         </div>
     </div>
 
+    <div id="new-user-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Novo Membro da Equipe</h3>
+                <button onclick="closeNewUserModal()" class="btn-icon-light">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="new-user-form">
+                    <div class="input-group" style="margin-bottom:15px">
+                        <label style="font-size:0.85rem; color:#666">Nome de Login</label>
+                        <input type="text" id="new-user-login" placeholder="Ex: thiago.silva" class="form-input" required>
+                    </div>
+                    
+                    <div class="input-group" style="margin-bottom:15px">
+                        <label style="font-size:0.85rem; color:#666">Senha Inicial</label>
+                        <input type="password" id="new-user-pass" placeholder="******" class="form-input" required>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom:15px">
+                        <label style="font-size:0.85rem; color:#666">Perfil de Acesso</label>
+                        <select id="new-user-role" class="form-input">
+                            <option value="ATENDENTE">Atendente (Padrão)</option>
+                            <option value="ADMIN">Administrador</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label style="font-size:0.85rem; color:#666">Departamento</label>
+                        <select id="new-user-dept" class="form-input">
+                            <option value="COMERCIAL">COMERCIAL</option>
+                            <option value="SUPORTE">SUPORTE</option>
+                            <option value="FINANCEIRO">FINANCEIRO</option>
+                            <option value="FINANCEIRO">LOGISTICA</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" style="width:100%; margin-top:20px">Cadastrar Usuário</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
