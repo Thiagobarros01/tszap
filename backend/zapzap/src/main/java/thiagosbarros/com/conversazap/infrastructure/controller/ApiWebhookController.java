@@ -22,17 +22,12 @@ public class ApiWebhookController {
     public ResponseEntity<RespostaMensagemDTO> receberMensagem(
             @RequestBody MensagemEntradaDTO dto
     ) {
-
-        log.info("🔌 [API] Recebendo mensagem de: {}", dto.telefoneCliente());
-
-        try {
+            log.info("🔌 [API] Recebendo mensagem de: {}", dto.telefoneCliente());
             var resposta = useCase.executar(dto.toCommand());
-            log.info("✅ Mensagem processada com sucesso. Resposta: {}", resposta);
+
+            log.info("✅ Processado com sucesso.");
             return ResponseEntity.ok(resposta);
-        } catch (Exception e) {
-            log.error("❌ Erro ao processar mensagem: ", e);
-            throw e;
-        }
+
 
     }
 }

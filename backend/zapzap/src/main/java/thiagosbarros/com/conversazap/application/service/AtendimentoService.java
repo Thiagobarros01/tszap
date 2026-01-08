@@ -1,13 +1,13 @@
 package thiagosbarros.com.conversazap.application.service;
 
 import jakarta.transaction.Transactional;
+import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontradaException;
 import thiagosbarros.com.conversazap.domain.enums.OrigemMensagem;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 import thiagosbarros.com.conversazap.domain.gateway.EnvioMensagemGateway;
 import thiagosbarros.com.conversazap.domain.model.*;
 import thiagosbarros.com.conversazap.domain.repository.*;
 import org.springframework.stereotype.Service;
-import thiagosbarros.com.conversazap.infrastructure.security.SecurityService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,7 +49,7 @@ public class AtendimentoService {
     public String processarMensagem(String telefoneEmpresa, String telefoneCliente, String texto) {
 
         Empresa empresa = empresaRepository.findByTelefoneWhatsApp(telefoneEmpresa)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+                .orElseThrow(() -> new EmpresaNaoEncontradaException("Empresa não encontrada"));
 
         Cliente cliente = clienteRepository
                 .findByTelefoneAndEmpresa(telefoneCliente, empresa)

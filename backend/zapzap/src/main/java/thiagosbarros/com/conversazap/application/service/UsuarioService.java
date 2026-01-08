@@ -3,8 +3,8 @@ package thiagosbarros.com.conversazap.application.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontradaException;
 import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
-import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontrada;
 import thiagosbarros.com.conversazap.application.exception.UsuarioNaoEncontradoException;
 import thiagosbarros.com.conversazap.domain.model.Empresa;
 import thiagosbarros.com.conversazap.domain.model.Usuario;
@@ -36,7 +36,7 @@ public class UsuarioService {
         String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
 
         Empresa empresa = empresaRepository.findById(dto.getIdEmpresa())
-                .orElseThrow(() -> new EmpresaNaoEncontrada("Empresa não encontrada"));
+                .orElseThrow(() -> new EmpresaNaoEncontradaException("Empresa não encontrada"));
 
         Usuario usuario = new Usuario(dto.getLogin(),dto.getEmail(),senhaCriptografada,dto.getRole(),empresa);
         usuarioRepository.save(usuario);
