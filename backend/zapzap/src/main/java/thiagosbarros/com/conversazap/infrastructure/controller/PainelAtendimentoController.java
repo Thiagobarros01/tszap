@@ -3,7 +3,9 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import thiagosbarros.com.conversazap.application.service.AtendimentoHumanoService;
+import thiagosbarros.com.conversazap.application.usecase.ObterDashboardUseCase;
 import thiagosbarros.com.conversazap.interfaces.dto.ConversaResumoDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.DashboardDTO;
 import thiagosbarros.com.conversazap.interfaces.dto.MensagemDTO;
 import thiagosbarros.com.conversazap.interfaces.dto.ResponderMensagemDTO;
 
@@ -14,9 +16,12 @@ import java.util.List;
 public class PainelAtendimentoController {
 
     private final AtendimentoHumanoService service;
+    private final ObterDashboardUseCase  obterDashboardUseCase;
 
-    public PainelAtendimentoController(AtendimentoHumanoService service) {
+    public PainelAtendimentoController(AtendimentoHumanoService service,
+                                       ObterDashboardUseCase obterDashboardUseCase) {
         this.service = service;
+        this.obterDashboardUseCase = obterDashboardUseCase;
     }
 
     @GetMapping("/conversas")
@@ -54,6 +59,12 @@ public class PainelAtendimentoController {
     public ResponseEntity<Void> marcarMensagensComoLida(@PathVariable Long idConversa) {
         service.marcarMensagensComoLida(idConversa);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardDTO> getDashboard() {
+        DashboardDTO dashboard = obterDashboardUseCase.executar();
+        return ResponseEntity.ok().body(dashboard);
     }
 
 }

@@ -25,4 +25,8 @@ public interface ConversaRepository extends JpaRepository<Conversa, Long> {
     );
 
     List<Conversa> findByCliente_EmpresaAndStatusNot(Empresa clienteEmpresa, StatusConversa status);
+
+    long countByCliente_Empresa(Empresa empresa);
+
+    long countByCliente_EmpresaAndStatus(Empresa empresa, StatusConversa status);
 }

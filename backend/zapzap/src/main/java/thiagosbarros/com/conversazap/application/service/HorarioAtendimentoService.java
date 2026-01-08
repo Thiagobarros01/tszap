@@ -13,7 +13,6 @@ public class HorarioAtendimentoService {
 
     public boolean estaDentroDoHorario(LocalDateTime agora) {
 
-        agora =  agora.plusHours(8);
         DayOfWeek dia = agora.getDayOfWeek();
         LocalTime hora = agora.toLocalTime();
 
