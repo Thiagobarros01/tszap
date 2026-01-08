@@ -752,6 +752,7 @@ if(formUser) {
         
         const login = document.getElementById('new-user-login').value;
         const senha = document.getElementById('new-user-pass').value;
+        const email = document.getElementById('new-user-email').value;
         const role = document.getElementById('new-user-role').value;
         const departamento = document.getElementById('new-user-dept').value;
 
@@ -759,6 +760,7 @@ if(formUser) {
         const body = {
             login: login,
             senha: senha,
+            email,
             role: role,
             departamento: departamento
         };
@@ -789,6 +791,80 @@ if(formUser) {
     });
 }
 
+// --- FUNÇÕES QUE FALTAVAM (Cole no final do app.js) ---
+
+// 1. Carrega o Dashboard
+function loadDashboard() {
+    // Calcula números baseados nas conversas carregadas
+    const conversas = state.conversationsCache || [];
+    
+    const total = conversas.length;
+    const emAtendimento = conversas.filter(c => c.status === 'HUMANO').length;
+    const naFila = conversas.filter(c => c.status === 'BOT').length;
+
+    // Preenche os cards
+    const elTotal = document.getElementById('dash-total');
+    const elActive = document.getElementById('dash-active');
+    const elWaiting = document.getElementById('dash-waiting');
+
+    if(elTotal) elTotal.textContent = total;
+    if(elActive) elActive.textContent = emAtendimento;
+    if(elWaiting) elWaiting.textContent = naFila;
+}
+
+// 2. Carrega a Tabela de Equipe (Busca do Backend)
+async function loadTeamTable() {
+    const tbody = document.getElementById('team-table-body');
+    if(!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px">Carregando equipe...</td></tr>';
+
+    try {
+        // Chama seu endpoint Java: GET /usuarios
+        const res = await apiCall('/usuarios'); 
+        
+        if(res && res.ok) {
+            const usuarios = await res.json();
+            tbody.innerHTML = '';
+            
+            if(usuarios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px">Nenhum usuário encontrado.</td></tr>';
+                return;
+            }
+
+            // Desenha cada linha da tabela
+            usuarios.forEach(u => {
+                // Define a cor da etiqueta (Admin = Azul, Atendente = Cinza)
+                const badgeClass = u.role === 'ADMIN' ? 'badge-admin' : 'badge-user';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="font-weight:500; color:#111b21">${u.login}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:500; color:#111b21">${u.email}</div>
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}">${u.role || 'ATENDENTE'}</span>
+                        </td>
+                        <td style="color:#54656f">${u.departamento || '-'}</td>
+                        <td>
+                            <button class="btn-icon" style="color:#ef5350" title="Ação indisponível na demo">
+                                <span class="material-icons-round">block</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding:20px">Erro ao buscar usuários.</td></tr>';
+        }
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding:20px">Erro de conexão.</td></tr>';
+    }
+}
 
 
 // 3. Fechar Modal
