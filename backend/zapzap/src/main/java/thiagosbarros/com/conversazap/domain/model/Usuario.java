@@ -13,6 +13,8 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String nomeUsuario;
+
     @Column(nullable = false)
     private String login;
 
@@ -85,6 +87,14 @@ public class Usuario {
 
     public void desativar(){
         this.ativo = false;
+    }
+
+    public String getNomeUsuario() {
+        return nomeUsuario;
+    }
+
+    public void definirNome(String nome) {
+        this.nomeUsuario = nome;
     }
 
     @Override

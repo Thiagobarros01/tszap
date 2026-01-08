@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import thiagosbarros.com.conversazap.application.service.ClienteService;
 import thiagosbarros.com.conversazap.interfaces.dto.ClienteDTO;
-import thiagosbarros.com.conversazap.interfaces.dto.response.ClienteResponseDto;
+import thiagosbarros.com.conversazap.interfaces.dto.ClienteResponseDto;
 
 import java.util.List;
 

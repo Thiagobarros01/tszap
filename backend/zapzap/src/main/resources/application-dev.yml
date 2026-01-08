@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5555/whatsapp_db
+    url: jdbc:postgresql://localhost:5432/whatsapp_db #jdbc:postgresql://localhost:5555/whatsapp_db
     username: postgres
-    password: postgres
+    password: admin #postgres
     hikari:
       maximum-pool-size: 10
       idle-timeout: 30000

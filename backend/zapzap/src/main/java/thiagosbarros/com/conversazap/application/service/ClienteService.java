@@ -8,7 +8,7 @@ import thiagosbarros.com.conversazap.domain.model.Usuario;
 import thiagosbarros.com.conversazap.domain.repository.ClienteRepository;
 import thiagosbarros.com.conversazap.infrastructure.security.SecurityService;
 import thiagosbarros.com.conversazap.interfaces.dto.ClienteDTO;
-import thiagosbarros.com.conversazap.interfaces.dto.response.ClienteResponseDto;
+import thiagosbarros.com.conversazap.interfaces.dto.ClienteResponseDto;
 
 import java.util.List;
 
@@ -67,4 +67,5 @@ public class ClienteService {
         return toDto(cliente);
 
     }
+
 }
