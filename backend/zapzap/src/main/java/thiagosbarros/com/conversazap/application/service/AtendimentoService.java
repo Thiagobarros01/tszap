@@ -72,7 +72,7 @@ public class AtendimentoService {
             return resposta;
         }
 
-        String respostaBot = botService.responder(conversa  ,texto);
+        String respostaBot = botService.processar(conversa  ,texto);
 
         if (respostaBot != null) {
             mensagemRepository.save(new Mensagem(conversa, OrigemMensagem.BOT, respostaBot));

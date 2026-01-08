@@ -21,7 +21,7 @@ public class OpcaoBot {
     private EtapaBot proximaEtapa;
 
     @Enumerated(value = EnumType.STRING)
-    private Departamento departamento;
+    private Departamento departamentoDestino;
 
     public OpcaoBot() {}
 
@@ -57,11 +57,11 @@ public class OpcaoBot {
         this.proximaEtapa = proximaEtapa;
     }
 
-    public Departamento getDepartamento() {
-        return departamento;
+    public Departamento getDepartamentoDestino() {
+        return departamentoDestino;
     }
 
-    public void setDepartamento(Departamento departamento) {
-        this.departamento = departamento;
+    public void setDepartamentoDestino(Departamento departamentoDestino) {
+        this.departamentoDestino = departamentoDestino;
     }
 }

@@ -114,6 +114,10 @@ public class Conversa {
         return etapaBotAtual;
     }
 
+    public void setEtapaBotAtual(EtapaBot etapaBotAtual) {
+        this.etapaBotAtual = etapaBotAtual;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
