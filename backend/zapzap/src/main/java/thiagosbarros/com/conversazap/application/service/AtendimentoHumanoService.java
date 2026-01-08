@@ -124,7 +124,7 @@ public class AtendimentoHumanoService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(() -> new RuntimeException("Conversa não encontrada"));
 
-        conversa.encerrar();
+        conversa.encerrarAtendimento();
         conversaRepository.save(conversa);
     }
 

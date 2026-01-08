@@ -2,6 +2,7 @@ package thiagosbarros.com.conversazap.infrastructure.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
 import thiagosbarros.com.conversazap.application.service.UsuarioService;
@@ -20,6 +21,7 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> salvarUsuario(@RequestBody UsuarioDTO usuarioDto) {
         usuarioService.salvar(usuarioDto);
         return ResponseEntity.noContent().build();

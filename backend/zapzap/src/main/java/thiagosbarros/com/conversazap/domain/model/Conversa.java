@@ -1,6 +1,7 @@
 package thiagosbarros.com.conversazap.domain.model;
 
 import jakarta.persistence.*;
+import thiagosbarros.com.conversazap.application.exception.BusinessException;
 import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 
@@ -44,6 +45,10 @@ public class Conversa {
     @OneToMany(mappedBy = "conversa",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Mensagem> mensagens = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "etapa_bot_atual_id")
+    private EtapaBot etapaBotAtual;
+
     protected Conversa() {
     }
 
@@ -65,7 +70,10 @@ public class Conversa {
         this.status = StatusConversa.HUMANO;
     }
 
-    public void encerrar() {
+    public void encerrarAtendimento() {
+        if (this.status == StatusConversa.ENCERRADA) {
+            throw new BusinessException("Já está encerrada!");
+        }
         this.status = StatusConversa.ENCERRADA;
         this.dataFim = LocalDateTime.now();
     }
@@ -100,6 +108,10 @@ public class Conversa {
 
     public void definirDepartamento(Departamento departamento) {
         this.departamento = departamento;
+    }
+
+    public EtapaBot getEtapaBotAtual() {
+        return etapaBotAtual;
     }
 
     @Override

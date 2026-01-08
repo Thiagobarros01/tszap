@@ -5,50 +5,43 @@ import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.StatusConversa;
 import thiagosbarros.com.conversazap.domain.model.Cliente;
 import thiagosbarros.com.conversazap.domain.model.Conversa;
+import thiagosbarros.com.conversazap.domain.model.EtapaBot;
+import thiagosbarros.com.conversazap.domain.repository.ConversaRepository;
+import thiagosbarros.com.conversazap.domain.repository.EtapaBotRepository;
+import thiagosbarros.com.conversazap.domain.repository.OpcaoBotRepository;
+
+import java.util.Optional;
 
 @Service
 public class BotService {
 
-    public String responder(Conversa conversa, String mensagemCliente) {
+    private final EtapaBotRepository  etapaBotRepository;
+    private final OpcaoBotRepository opcaoBotRepository;
+    private final ConversaRepository  conversaRepository;
 
-        // Primeira mensagem ou conversa em BOT
-        if (conversa.getStatus() != StatusConversa.BOT) {
-            return null;
+    public BotService(EtapaBotRepository etapaBotRepository, OpcaoBotRepository opcaoBotRepository, ConversaRepository conversaRepository) {
+        this.etapaBotRepository = etapaBotRepository;
+        this.opcaoBotRepository = opcaoBotRepository;
+        this.conversaRepository = conversaRepository;
+    }
+
+
+    public String processar(Conversa conversa, String mensagemCliente){
+        if(conversa.getEtapaBotAtual() == null){
+            return iniciarFluxo(conversa);
+        }
+    }
+
+    private String iniciarFluxo(Conversa conversa) {
+        Optional<EtapaBot> etapaInicial = etapaBotRepository
+                .findByEmpresaAndInicialTrue(conversa.getCliente().getEmpresa());
+
+        if(etapaInicial.isEmpty()){
+            return "Olá! Bem-vindo. No momento não temos um menu configurado. Aguarde um atendente.";
         }
 
-        switch (mensagemCliente.trim()){
-            case "1":
-                return transferirParaDepartamento(conversa,Departamento.COMERCIAL);
-            case "2":
-                return transferirParaDepartamento(conversa,Departamento.SUPORTE);
-            case "3":
-                return transferirParaDepartamento(conversa,Departamento.FINANCEIRO);
-            case "4":
-                return transferirParaDepartamento(conversa,Departamento.LOGISTICA);
-            default:
-                return menuInicial();
-        }
 
     }
 
 
-    private String transferirParaDepartamento(Conversa conversa, Departamento departamento) {
-        conversa.definirDepartamento(departamento);
-        conversa.transferirParaHumano();
-        return "✅ Entendido! Transferindo para o time do " + departamento.name() + ". Aguarde um momento.";
-    }
-
-    private String menuInicial() {
-        return """
-                👋 Olá! Bem-vindo à T.S Zap.
-                Para direcionar seu atendimento, escolha uma opção:
-               
-                1️⃣ Comercial / Vendas
-                2️⃣ Suporte Técnico
-                3️⃣ Financeiro
-                4️⃣ Logistica
-               
-                Digite apenas o número.
-               """;
-    }
 }
