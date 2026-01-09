@@ -113,6 +113,7 @@ window.navigate = function(viewName) {
     if(viewName === 'clients') loadClientsTable();
     if(viewName === 'team') loadTeamTable();       // <--- NOVO
     if(viewName === 'dashboard') loadDashboard();  // <--- NOVO
+    if(viewName === 'bot') loadBotConfig();
 
     // 5. Se for aba de clientes, carrega a tabela
     if(viewName === 'clients') loadClientsTable();
@@ -877,7 +878,217 @@ async function loadTeamTable() {
     }
 }
 
+// ==========================================
+// MÓDULO: CONSTRUTOR DE BOT (BOT BUILDER)
+// ==========================================
+
+let botStepsCache = []; // Cache para popular os selects de destino
+
+// 1. Carregar Tela (Chamado pelo navigate('bot'))
+async function loadBotConfig() {
+    const container = document.getElementById('bot-steps-container');
+    if(!container) return;
+    
+    container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px">Carregando fluxo...</div>';
+
+    try {
+        const res = await apiCall('/painel/bot/config');
+        if (res && res.ok) {
+            botStepsCache = await res.json(); // Guarda cache
+            renderBotSteps(botStepsCache);
+        } else {
+            container.innerHTML = '<div style="color:red; text-align:center">Erro ao carregar dados.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="color:red; text-align:center">Erro de conexão.</div>';
+    }
+}
+
+// 2. Desenhar Cards na Tela
+function renderBotSteps(steps) {
+    const container = document.getElementById('bot-steps-container');
+    container.innerHTML = '';
+
+    if (steps.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:40px; color:#999; border:2px dashed #ddd; border-radius:10px">
+                <span class="material-icons-round" style="font-size:48px; display:block; margin-bottom:10px">smart_toy</span>
+                Você ainda não criou nenhuma etapa.<br>Clique em "Nova Etapa" para começar.
+            </div>`;
+        return;
+    }
+
+    steps.forEach(step => {
+        // Monta HTML das opções (pequeno resumo no card)
+        let optionsHtml = '';
+        if (step.opcoes && step.opcoes.length > 0) {
+            optionsHtml = step.opcoes.map(op => {
+                let destino = op.departamentoDestino 
+                    ? `<span style="color:#e91e63">👤 ${op.departamentoDestino}</span>` 
+                    : `➡ Vai p/ ID ${op.proximaEtapaId || '?'}`;
+                return `<div class="bot-option-item"><strong>[${op.gatilho}]</strong> ${destino}</div>`;
+            }).join('');
+        } else {
+            optionsHtml = '<div style="color:#aaa; font-style:italic">Sem opções (Fim)</div>';
+        }
+
+        container.innerHTML += `
+            <div class="bot-card ${step.inicial ? 'inicial' : ''}" onclick="openStepModal(${step.id})">
+                ${step.inicial ? '<span class="bot-badge">INÍCIO</span>' : ''}
+                <div class="bot-msg-preview">${escapeHtml(step.mensagem)}</div>
+                <div class="bot-options-list">${optionsHtml}</div>
+                <div style="margin-top:10px; font-size:0.75rem; color:#ccc; text-align:right">ID: ${step.id}</div>
+            </div>
+        `;
+    });
+}
+
+// 3. Abrir Modal (Criação ou Edição)
+window.openStepModal = function(stepId = null) {
+    const modal = document.getElementById('bot-step-modal');
+    const form = document.getElementById('bot-step-form');
+    const container = document.getElementById('options-container');
+    
+    form.reset();
+    container.innerHTML = ''; // Limpa opções anteriores
+    document.getElementById('step-id').value = '';
+
+    if (stepId) {
+        // Modo Edição: Achar dados no cache
+        const step = botStepsCache.find(s => s.id === stepId);
+        if (step) {
+            document.getElementById('step-id').value = step.id;
+            document.getElementById('step-msg').value = step.mensagem;
+            document.getElementById('step-initial').checked = step.inicial;
+            
+            // Preencher linhas de opção
+            if (step.opcoes) {
+                step.opcoes.forEach(op => addOptionRow(op));
+            }
+        }
+    } else {
+        // Modo Criação: Adiciona uma linha vazia pra ajudar
+        addOptionRow();
+    }
+
+    modal.classList.add('active');
+};
+
+window.closeStepModal = function() {
+    document.getElementById('bot-step-modal').classList.remove('active');
+};
+
+// 4. Adicionar Linha de Opção no Form
+window.addOptionRow = function(data = null) {
+    const container = document.getElementById('options-container');
+    const div = document.createElement('div');
+    div.className = 'option-row';
+    
+    // Select inteligente: Mistura Departamentos com Outras Etapas
+    let optionsHtml = '<option value="" disabled selected>Destino...</option>';
+    
+    // Grupo 1: Departamentos (Fim de papo, vai pra humano)
+    optionsHtml += '<optgroup label="Transferir para Humano">';
+    ['COMERCIAL', 'SUPORTE', 'FINANCEIRO'].forEach(d => {
+        optionsHtml += `<option value="DEPT:${d}">👤 ${d}</option>`;
+    });
+    optionsHtml += '</optgroup>';
+    
+    // Grupo 2: Outras Etapas (Navegação)
+    optionsHtml += '<optgroup label="Ir para outra Etapa">';
+    const currentId = document.getElementById('step-id').value;
+    botStepsCache.forEach(s => {
+        // Não mostrar a própria etapa como destino (evita loop curto)
+        if(s.id != currentId) {
+            // Corta mensagem longa
+            const resumo = s.mensagem.length > 20 ? s.mensagem.substring(0, 20) + '...' : s.mensagem;
+            optionsHtml += `<option value="STEP:${s.id}">➡ [ID ${s.id}] ${resumo}</option>`;
+        }
+    });
+    optionsHtml += '</optgroup>';
+
+    div.innerHTML = `
+        <input type="text" class="form-input gatilho" placeholder="1" value="${data ? data.gatilho : ''}" required>
+        <select class="form-input destino" required>${optionsHtml}</select>
+        <button type="button" class="btn-icon" onclick="this.parentElement.remove()" style="color:#ef5350">
+            <span class="material-icons-round">delete</span>
+        </button>
+    `;
+
+    container.appendChild(div);
+
+    // Se for edição, seleciona o valor certo no dropdown
+    if (data) {
+        const select = div.querySelector('.destino');
+        if (data.departamentoDestino) {
+            select.value = `DEPT:${data.departamentoDestino}`;
+        } else if (data.proximaEtapaId) {
+            select.value = `STEP:${data.proximaEtapaId}`;
+        }
+    }
+};
+
+// 5. Salvar (Submit do Form)
+const formBot = document.getElementById('bot-step-form');
+if(formBot) {
+    formBot.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('step-id').value;
+        const msg = document.getElementById('step-msg').value;
+        const inicial = document.getElementById('step-initial').checked;
+        
+        // Monta lista de opções lendo as linhas
+        const opcoes = [];
+        document.querySelectorAll('.option-row').forEach(row => {
+            const gatilho = row.querySelector('.gatilho').value;
+            const destinoVal = row.querySelector('.destino').value; // Ex: "DEPT:SUPORTE" ou "STEP:5"
+            
+            const opObj = { gatilho: gatilho };
+            
+            if (destinoVal.startsWith('DEPT:')) {
+                opObj.departamentoDestino = destinoVal.split(':')[1];
+            } else if (destinoVal.startsWith('STEP:')) {
+                opObj.proximaEtapaId = parseInt(destinoVal.split(':')[1]);
+            }
+            opcoes.push(opObj);
+        });
+
+        // Monta Payload pro Java
+        const payload = {
+            id: id ? parseInt(id) : null,
+            mensagem: msg,
+            inicial: inicial,
+            opcoes: opcoes
+        };
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        const txtOriginal = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+
+        try {
+            const res = await apiCall('/painel/bot/config', 'POST', payload);
+            if (res && res.ok) {
+                showToast('Etapa salva com sucesso!');
+                closeStepModal();
+                loadBotConfig(); // Recarrega a tela pra ver a mudança
+            } else {
+                showToast('Erro ao salvar.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Erro de conexão.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = txtOriginal;
+        }
+    });
+}
+
 
 // 3. Fechar Modal
 if (ui.modal.close) ui.modal.close.onclick = () => ui.modal.el.classList.remove('active');
 if (ui.modal.cancel) ui.modal.cancel.onclick = () => ui.modal.el.classList.remove('active');
+

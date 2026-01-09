@@ -514,3 +514,79 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     color: #616161;
     border: 1px solid rgba(0,0,0,0.05);
 }
+
+/* --- TELA DE ROBÔ --- */
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsivo */
+    gap: 20px;
+    padding-bottom: 50px;
+}
+
+.bot-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-color: #00a884;
+}
+
+.bot-card.inicial {
+    border-left: 5px solid #00a884; /* Marca verde na lateral se for inicial */
+}
+
+.bot-badge {
+    background: #e0f2f1;
+    color: #00695c;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.bot-msg-preview {
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    white-space: pre-wrap; /* Respeita quebras de linha */
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bot-options-list {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.bot-option-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+.bot-option-item:last-child { border-bottom: none; }
+
+/* Linha de opção dentro do Modal */
+.option-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 40px; /* Gatilho | Destino | Delete */
+    gap: 10px;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 6px;
+}
