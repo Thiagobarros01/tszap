@@ -24,7 +24,8 @@ const ui = {
         chat: document.getElementById('view-chat'),
         clients: document.getElementById('view-clients'),
         dashboard: document.getElementById('view-dashboard'), // <--- NOVO
-        team: document.getElementById('view-team')            // <--- NOVO
+        team: document.getElementById('view-team'),            // <--- NOVO
+        bot: document.getElementById('view-bot')
     },
     login: { 
         form: document.getElementById('login-form'), 
@@ -113,6 +114,7 @@ window.navigate = function(viewName) {
     if(viewName === 'clients') loadClientsTable();
     if(viewName === 'team') loadTeamTable();       // <--- NOVO
     if(viewName === 'dashboard') loadDashboard();  // <--- NOVO
+    if(viewName === 'bot') loadBotConfig();
 
     // 5. Se for aba de clientes, carrega a tabela
     if(viewName === 'clients') loadClientsTable();
@@ -876,7 +878,6 @@ async function loadTeamTable() {
         tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding:20px">Erro de conexão.</td></tr>';
     }
 }
-
 // --- LÓGICA DO ROBÔ (BOT BUILDER) ---
 
 let botStepsCache = []; // Guarda as etapas para usar nos selects
