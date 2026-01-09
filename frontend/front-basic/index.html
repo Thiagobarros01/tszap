@@ -53,8 +53,8 @@
                     <span class="material-icons-round">badge</span>
                 </button>
                 <button class="nav-btn" onclick="navigate('bot')" title="Configurar Robô">
-                    <span class="material-icons-round">smart_toy</span>
-                </button>
+                <span class="material-icons-round">smart_toy</span>
+            </button>
             </div>
 
             <div class="nav-footer">
@@ -203,21 +203,58 @@
                     </table>
                 </div>
             </div>
+            <div id="view-bot" class="view">
+
+            <div class="page-header">
+                <div>
+                    <h2>Fluxo de Atendimento</h2>
+                    <div style="font-size: 0.9rem; color: #666">Desenhe como o robô vai responder</div>
+                </div>
+                <button class="btn-primary" onclick="openStepModal()">
+                    <span class="material-icons-round">add</span> Nova Etapa
+                </button>
+            </div>
+            
+            <div id="bot-steps-container" class="bot-grid"></div>
         </div>
 
-        <div id="view-bot" class="view">
-                <div class="page-header">
-                    <div>
-                        <h2>Fluxo de Atendimento</h2>
-                        <div style="font-size: 0.9rem; color: #666">Desenhe como o robô vai responder</div>
-                    </div>
-                    <button class="btn-primary" onclick="openStepModal()">
-                        <span class="material-icons-round">add</span> Nova Etapa
-                    </button>
+        <div id="bot-step-modal" class="modal-overlay">
+            <div class="modal-card" style="max-width: 600px; width: 100%;">
+                <div class="modal-header">
+                    <h3>Editar Etapa</h3>
+                    <button onclick="closeStepModal()" class="btn-icon-light"><span class="material-icons-round">close</span></button>
                 </div>
-                
-                <div id="bot-steps-container" class="bot-grid"></div>
+                <div class="modal-body">
+                    <form id="bot-step-form">
+                        <input type="hidden" id="step-id">
+                        
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label>Mensagem do Robô</label>
+                            <textarea id="step-msg" rows="3" class="form-input" placeholder="Ex: Olá! Escolha uma opção..." required></textarea>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="step-initial" style="width: 20px; height: 20px;">
+                            <label for="step-initial" style="margin:0; font-weight: 500;">Esta é a mensagem de Boas-vindas?</label>
+                        </div>
+
+                        <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <label style="font-weight:600">Botões / Opções</label>
+                                <button type="button" class="btn-text" onclick="addOptionRow()">+ Adicionar Opção</button>
+                            </div>
+                            <div id="options-container" style="display:flex; flex-direction:column; gap:10px">
+                                </div>
+                        </div>
+
+                        <div class="modal-footer" style="margin-top: 20px;">
+                            <button type="submit" class="btn-primary" style="width: 100%;">Salvar Etapa</button>
+                        </div>
+                    </form>
+                </div>
             </div>
+        </div>
+        </div>
         
     </div>
 
@@ -319,46 +356,6 @@
                     </div>
                     
                     <button type="submit" class="btn-primary" style="width:100%; margin-top:20px">Cadastrar Usuário</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="bot-step-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 600px; width: 100%;">
-            <div class="modal-header">
-                <h3>Editar Etapa</h3>
-                <button onclick="closeStepModal()" class="btn-icon-light">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <form id="bot-step-form">
-                    <input type="hidden" id="step-id">
-                    
-                    <div class="input-group" style="margin-bottom: 15px;">
-                        <label>Mensagem do Robô</label>
-                        <textarea id="step-msg" rows="3" class="form-input" placeholder="Ex: Olá! Digite 1 para Comprar..." required></textarea>
-                    </div>
-
-                    <div class="input-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="step-initial" style="width: 20px; height: 20px;">
-                        <label for="step-initial" style="margin:0; font-weight: 500;">Esta é a mensagem de Boas-vindas?</label>
-                    </div>
-
-                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                            <label style="font-weight:600">Botões / Opções</label>
-                            <button type="button" class="btn-text" onclick="addOptionRow()">+ Adicionar Opção</button>
-                        </div>
-                        
-                        <div id="options-container" style="display:flex; flex-direction:column; gap:10px"></div>
-                    </div>
-
-                    <div class="modal-footer" style="margin-top: 20px;">
-                        <button type="submit" class="btn-primary" style="width: 100%;">Salvar Etapa</button>
-                    </div>
                 </form>
             </div>
         </div>

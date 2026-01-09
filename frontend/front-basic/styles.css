@@ -515,10 +515,18 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     border: 1px solid rgba(0,0,0,0.05);
 }
 
+/* Junto com #view-clients.active, #view-dashboard.active, etc */
+#view-bot.active {
+    display: block;
+    padding: 30px;
+    overflow-y: auto;
+    width: 100%;
+}
+
 /* --- TELA DE ROBÔ --- */
 .bot-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsivo */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
     padding-bottom: 50px;
 }
@@ -529,18 +537,17 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     border-radius: 12px;
     padding: 20px;
     position: relative;
-    cursor: pointer;
     transition: all 0.2s;
 }
 
 .bot-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
     border-color: #00a884;
 }
 
 .bot-card.inicial {
-    border-left: 5px solid #00a884; /* Marca verde na lateral se for inicial */
+    border-left: 4px solid #00a884;
 }
 
 .bot-badge {
@@ -548,10 +555,9 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     color: #00695c;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: inline-block;
 }
 
@@ -560,13 +566,10 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     font-size: 0.95rem;
     margin-bottom: 15px;
     white-space: pre-wrap; /* Respeita quebras de linha */
-    max-height: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .bot-options-list {
-    background: #f8f9fa;
+    background: #f9f9f9;
     padding: 10px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -576,17 +579,16 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     display: flex;
     justify-content: space-between;
     padding: 4px 0;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #eee;
 }
-.bot-option-item:last-child { border-bottom: none; }
 
-/* Linha de opção dentro do Modal */
+/* Modal de Opções */
 .option-row {
     display: grid;
-    grid-template-columns: 80px 1fr 40px; /* Gatilho | Destino | Delete */
+    grid-template-columns: 80px 1fr 40px;
     gap: 10px;
     align-items: center;
     background: #f8f9fa;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 8px;
 }
