@@ -43,6 +43,7 @@ public class BotService {
 
         if (opcaoEncontrada.isEmpty()) {
             return "Opção inválida. Por favor, digite uma das opções do menu anterior.";
+            //Talvez eu adicione o menu novamente
         }
 
         OpcaoBot opcao = opcaoEncontrada.get();
