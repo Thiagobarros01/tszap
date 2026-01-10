@@ -64,6 +64,8 @@ public class GestaoBotService {
 
     }
 
+
+    @Transactional
     public void atualizarOpcoes(EtapaBot etapaPai,  List<OpcaoBotDTO> opcoesDTO ){
 
         for (OpcaoBotDTO opDto : opcoesDTO) {
@@ -94,6 +96,18 @@ public class GestaoBotService {
         }
     }
 
+    @Transactional
+    public void removerEtapa(Long id){
+        List<OpcaoBot> opcoesEtapa = opcaoBotRepository.findAll().stream()
+                .filter(o -> o.getProximaEtapa() != null
+                        && o.getProximaEtapa().getId().equals(id)).toList();
+
+        for (OpcaoBot op : opcoesEtapa) {
+            op.setProximaEtapa(null);
+            opcaoBotRepository.save(op);
+        }
+        etapaBotRepository.deleteById(id);
+    }
 
 
     private EtapaBotDTO toDto(EtapaBot e){

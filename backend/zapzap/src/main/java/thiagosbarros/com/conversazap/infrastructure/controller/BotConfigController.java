@@ -28,4 +28,9 @@ public class BotConfigController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usecase.salvar(dto));
     }
 
+    @DeleteMapping("{idEtapa}")
+    public ResponseEntity<Void> removerEtapa(@PathVariable Long idEtapa) {
+        usecase.removerEtapa(idEtapa);
+        return ResponseEntity.noContent().build();
+    }
 }

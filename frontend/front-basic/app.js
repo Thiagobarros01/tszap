@@ -1077,8 +1077,8 @@ document.getElementById('bot-step-form').addEventListener('submit', async (e) =>
 
 // Função para Excluir a Etapa
 async function deleteCurrentStep() {
-    const id = document.getElementById('step-id').value;
-    if (!id) return;
+    const idEtapa = document.getElementById('step-id').value;
+    if (!idEtapa) return;
 
     if (!confirm('Tem certeza que deseja excluir esta etapa? Se houver opções apontando para ela, elas perderão o destino.')) {
         return;
@@ -1090,7 +1090,7 @@ async function deleteCurrentStep() {
     btn.disabled = true;
 
     try {
-        const res = await apiCall(`/painel/bot/config/${id}`, 'DELETE');
+        const res = await apiCall(`/painel/bot/config/${idEtapa}`, 'DELETE');
         
         if (res && res.ok) {
             showToast('Etapa excluída com sucesso!', 'success');
