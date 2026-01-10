@@ -76,15 +76,12 @@ public class GestaoBotService {
         }
         etapa.setInicial(dto.isInicial());
 
-        // AQUI ESTÁ A CORREÇÃO DA DUPLICAÇÃO:
-        // 1. Limpa a lista existente (o orphanRemoval=true no Model vai deletar do banco)
         if (etapa.getOpcoes() != null) {
             etapa.getOpcoes().clear();
         } else {
             etapa.setOpcoes(new ArrayList<>());
         }
 
-        // 2. Adiciona as novas (mapeadas)
         if (dto.getOpcoes() != null) {
             mapearOpcoes(etapa, dto.getOpcoes());
         }
