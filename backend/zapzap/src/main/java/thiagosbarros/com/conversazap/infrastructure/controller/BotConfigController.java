@@ -28,6 +28,12 @@ public class BotConfigController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usecase.salvar(dto));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<EtapaBotDTO> atualizar(@PathVariable Long id, @RequestBody EtapaBotDTO dto) {
+        EtapaBotDTO etapaBotDTO = usecase.atualizarEtapa(id, dto);
+        return ResponseEntity.ok().body(etapaBotDTO);
+    }
+
     @DeleteMapping("{idEtapa}")
     public ResponseEntity<Void> removerEtapa(@PathVariable Long idEtapa) {
         usecase.removerEtapa(idEtapa);

@@ -2,6 +2,7 @@ package thiagosbarros.com.conversazap.application.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import thiagosbarros.com.conversazap.application.exception.BusinessException;
 import thiagosbarros.com.conversazap.domain.model.Empresa;
 import thiagosbarros.com.conversazap.domain.model.EtapaBot;
 import thiagosbarros.com.conversazap.domain.model.OpcaoBot;
@@ -10,6 +11,7 @@ import thiagosbarros.com.conversazap.domain.repository.OpcaoBotRepository;
 import thiagosbarros.com.conversazap.interfaces.dto.EtapaBotDTO;
 import thiagosbarros.com.conversazap.interfaces.dto.OpcaoBotDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,53 +40,73 @@ public class GestaoBotService {
 
 
     @Transactional
-    public EtapaBotDTO salvarEtapa(Empresa empresa,EtapaBotDTO dto){
-        EtapaBot etapa = new EtapaBot();
-
-        if(dto.getId() != null){
-            etapa = etapaBotRepository.findById(dto.getId()).
-                    filter(e -> e.getEmpresa().getId().equals(empresa.getId()))
-                    .orElse(new EtapaBot());
+    public EtapaBotDTO salvarEtapa(Empresa empresa, EtapaBotDTO dto) {
+        if (dto.getId() != null) {
+            return atualizarEtapa(dto.getId(), empresa, dto);
         }
-        etapa.setMensagem(dto.getMensagem());
-        etapa.setInicial(dto.isInicial());
-        etapa.setEmpresa(empresa);
 
-        if(dto.isInicial()){
+        EtapaBot etapa = new EtapaBot();
+        etapa.setEmpresa(empresa);
+        etapa.setMensagem(dto.getMensagem());
+
+        if (dto.isInicial()) {
             desmarcarOutrasIniciais(empresa);
+        }
+        etapa.setInicial(dto.isInicial());
+
+        if (dto.getOpcoes() != null) {
+            etapa.setOpcoes(new ArrayList<>());
+            mapearOpcoes(etapa, dto.getOpcoes());
         }
 
         EtapaBot etapaSalva = etapaBotRepository.save(etapa);
-
-        if(dto.getOpcoes() != null){
-            atualizarOpcoes(etapaSalva, dto.getOpcoes());
-        }
-
         return toDto(etapaSalva);
-
     }
 
-
     @Transactional
-    public void atualizarOpcoes(EtapaBot etapaPai,  List<OpcaoBotDTO> opcoesDTO ){
+    public EtapaBotDTO atualizarEtapa(Long id, Empresa empresa, EtapaBotDTO dto) {
+        EtapaBot etapa = etapaBotRepository.findById(id)
+                .filter(e -> e.getEmpresa().getId().equals(empresa.getId()))
+                .orElseThrow(() -> new BusinessException("Etapa não encontrada ou acesso negado"));
 
+        etapa.setMensagem(dto.getMensagem());
+
+        if (dto.isInicial()) {
+            desmarcarOutrasIniciais(empresa);
+        }
+        etapa.setInicial(dto.isInicial());
+
+        // AQUI ESTÁ A CORREÇÃO DA DUPLICAÇÃO:
+        // 1. Limpa a lista existente (o orphanRemoval=true no Model vai deletar do banco)
+        if (etapa.getOpcoes() != null) {
+            etapa.getOpcoes().clear();
+        } else {
+            etapa.setOpcoes(new ArrayList<>());
+        }
+
+        // 2. Adiciona as novas (mapeadas)
+        if (dto.getOpcoes() != null) {
+            mapearOpcoes(etapa, dto.getOpcoes());
+        }
+
+        EtapaBot etapaSalva = etapaBotRepository.save(etapa);
+        return toDto(etapaSalva);
+    }
+
+    private void mapearOpcoes(EtapaBot etapaPai, List<OpcaoBotDTO> opcoesDTO) {
         for (OpcaoBotDTO opDto : opcoesDTO) {
-            OpcaoBot op =  new OpcaoBot();
-            if(opDto.getId() != null){
-                op = opcaoBotRepository.findById(opDto.getId())
-                        .orElse(new OpcaoBot());
-            }
-
+            OpcaoBot op = new OpcaoBot();
             op.setGatilho(opDto.getGatilho());
-            op.setEtapaOrigem(etapaPai);
             op.setDepartamentoDestino(opDto.getDepartamentoDestino());
+            op.setEtapaOrigem(etapaPai);
 
-            if(opDto.getProximaEtapaId() != null){
-                etapaBotRepository.findById(opDto.getProximaEtapaId())
-                        .ifPresent(op::setProximaEtapa);
+            if (opDto.getProximaEtapaId() != null) {
+                // Referência apenas para o ID
+                EtapaBot proxima = new EtapaBot();
+                proxima.setId(opDto.getProximaEtapaId());
+                op.setProximaEtapa(proxima);
             }
-
-                opcaoBotRepository.save(op);
+            etapaPai.getOpcoes().add(op);
         }
     }
 
@@ -127,6 +149,7 @@ public class GestaoBotService {
                 }
                 return opDtos;
             }).toList();
+            dto.setOpcoes(opBots);
         }
         return dto;
     }

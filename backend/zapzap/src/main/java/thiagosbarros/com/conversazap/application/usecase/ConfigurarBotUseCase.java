@@ -25,11 +25,18 @@ public class ConfigurarBotUseCase {
     }
 
     public EtapaBotDTO salvar(EtapaBotDTO dto){
+        dto.setId(null);
         Empresa empresa = securityService.usuarioLogado().getEmpresa();
         return gestaoBotService.salvarEtapa(empresa, dto);
     }
 
     public void removerEtapa(Long id){
         gestaoBotService.removerEtapa(id);
+    }
+
+    public EtapaBotDTO atualizarEtapa(Long id,EtapaBotDTO dto) {
+        Empresa empresa = securityService.usuarioLogado().getEmpresa();
+
+        return gestaoBotService.atualizarEtapa(id,empresa, dto);
     }
 }

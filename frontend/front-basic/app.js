@@ -1120,7 +1120,16 @@ document.getElementById('bot-step-form').addEventListener('submit', async (e) =>
     btn.textContent = 'Salvando...';
 
     try {
-        const res = await apiCall('/painel/bot/config', 'POST', payload);
+        let res;
+
+if (id) {
+    // ATUALIZA etapa existente
+    res = await apiCall(`/painel/bot/config/${id}`, 'PUT', payload);
+} else {
+    // CRIA nova etapa
+    res = await apiCall('/painel/bot/config', 'POST', payload);
+}
+
         if (res && res.ok) {
             closeStepModal();
             loadBotConfig(); // Recarrega a tela
