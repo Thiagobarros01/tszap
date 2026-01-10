@@ -940,17 +940,18 @@ function renderBotSteps(steps) {
 
 // 2. Modal e Edição
 function openStepModal(stepId = null) {
-    const modal = document.getElementById('bot-step-modal');
+   const modal = document.getElementById('bot-step-modal');
     const form = document.getElementById('bot-step-form');
-    const container = document.getElementById('options-container');
+    const containerOpts = document.getElementById('options-container');
+    const btnDelete = document.getElementById('btn-delete-step'); // <--- NOVO
     
     // Limpa tudo
     form.reset();
-    container.innerHTML = '';
+    containerOpts.innerHTML = '';
     document.getElementById('step-id').value = '';
 
-    if (stepId) {
-        // Edição: Preenche os dados
+if (stepId) {
+        // MODO EDIÇÃO
         const step = botStepsCache.find(s => s.id === stepId);
         if (step) {
             document.getElementById('step-id').value = step.id;
@@ -958,13 +959,16 @@ function openStepModal(stepId = null) {
             document.getElementById('step-initial').checked = step.inicial;
             
             // Preenche opções
-            if (step.opcoes) {
-                step.opcoes.forEach(op => addOptionRow(op));
-            }
+        if (step.opcoes) step.opcoes.forEach(op => addOptionRow(op));
         }
-    } else {
-        // Novo: Adiciona uma linha vazia pra facilitar
+
+        if(btnDelete) btnDelete.style.display = 'inline-block';
+
+   } else {
+        // MODO CRIAÇÃO
         addOptionRow();
+        // ESCONDE O BOTÃO EXCLUIR
+        if(btnDelete) btnDelete.style.display = 'none';
     }
 
     modal.classList.add('active');
@@ -1070,6 +1074,39 @@ document.getElementById('bot-step-form').addEventListener('submit', async (e) =>
         btn.textContent = txt;
     }
 });
+
+// Função para Excluir a Etapa
+async function deleteCurrentStep() {
+    const id = document.getElementById('step-id').value;
+    if (!id) return;
+
+    if (!confirm('Tem certeza que deseja excluir esta etapa? Se houver opções apontando para ela, elas perderão o destino.')) {
+        return;
+    }
+
+    const btn = document.getElementById('btn-delete-step');
+    const originalText = btn.innerHTML;
+    btn.textContent = 'Excluindo...';
+    btn.disabled = true;
+
+    try {
+        const res = await apiCall(`/painel/bot/config/${id}`, 'DELETE');
+        
+        if (res && res.ok) {
+            showToast('Etapa excluída com sucesso!', 'success');
+            closeStepModal();
+            loadBotConfig(); // Atualiza a tela
+        } else {
+            showToast('Erro ao excluir etapa.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Erro de conexão.', 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 
 // 3. Fechar Modal
 if (ui.modal.close) ui.modal.close.onclick = () => ui.modal.el.classList.remove('active');
