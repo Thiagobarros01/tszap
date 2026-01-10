@@ -6,20 +6,17 @@ import ChatWindow from '@/components/chat/ChatWindow.vue'
 
 const conversaStore = useConversaStore()
 const filtro = ref('')
-let refreshInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
+  // Carrega a lista inicial via HTTP
   conversaStore.carregarConversas()
-  // Atualiza lista a cada 30 segundos
-  refreshInterval = setInterval(() => {
-    conversaStore.carregarConversas()
-  }, 30000)
+  
+  // LIGA O WEBSOCKET (Substitui o setInterval de 30s)
+  conversaStore.conectarWebSocket()
 })
 
 onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-  }
+  // Limpa seleção ao sair da tela
   conversaStore.limparSelecao()
 })
 
@@ -30,9 +27,7 @@ function handleRefresh() {
 
 <template>
   <div class="h-[calc(100vh-7rem)] flex gap-4 animate-fade-in">
-    <!-- Conversation List Panel -->
     <div class="w-80 min-w-[280px] flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shrink-0">
-      <!-- Header -->
       <div class="p-4 border-b border-slate-800">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-semibold text-white">Conversas</h2>
@@ -65,11 +60,9 @@ function handleRefresh() {
         </div>
       </div>
 
-      <!-- List -->
       <ConversaList :filtro="filtro" />
     </div>
 
-    <!-- Chat Panel -->
     <div class="flex-1">
       <ChatWindow />
     </div>

@@ -7,8 +7,15 @@ export const botService = {
     return response.data
   },
 
-  async salvarEtapa(etapa: EtapaBot): Promise<EtapaBot> {
+  // NOVO: Método específico para CRIAR (POST)
+  async criarEtapa(etapa: EtapaBot): Promise<EtapaBot> {
     const response = await api.post<EtapaBot>('/painel/bot/config', etapa)
+    return response.data
+  },
+
+  // NOVO: Método específico para ATUALIZAR (PUT)
+  async atualizarEtapa(id: number, etapa: EtapaBot): Promise<EtapaBot> {
+    const response = await api.put<EtapaBot>(`/painel/bot/config/${id}`, etapa)
     return response.data
   },
 

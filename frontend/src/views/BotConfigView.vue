@@ -12,6 +12,7 @@ const editingEtapa = ref<EtapaBot | null>(null)
 const saving = ref(false)
 const error = ref('')
 
+// Estado inicial do form
 const form = ref<EtapaBot>({
   mensagem: '',
   inicial: false,
@@ -39,6 +40,7 @@ async function loadEtapas() {
 
 function openNewModal() {
   editingEtapa.value = null
+  // Limpa o form completamente para evitar lixo de memória
   form.value = {
     mensagem: '',
     inicial: false,
@@ -50,11 +52,13 @@ function openNewModal() {
 
 function openEditModal(etapa: EtapaBot) {
   editingEtapa.value = etapa
+  // Clona os dados para não editar o objeto da lista diretamente antes de salvar
   form.value = {
     id: etapa.id,
     mensagem: etapa.mensagem,
     inicial: etapa.inicial || false,
-    opcoes: [...(etapa.opcoes || [])]
+    // Cria uma cópia profunda das opções para não duplicar visualmente se reabrir
+    opcoes: etapa.opcoes ? JSON.parse(JSON.stringify(etapa.opcoes)) : []
   }
   error.value = ''
   showModal.value = true
@@ -66,6 +70,7 @@ function closeModal() {
 }
 
 function addOpcao() {
+  if (!form.value.opcoes) form.value.opcoes = []
   form.value.opcoes.push({
     gatilho: '',
     proximaEtapaId: null,
@@ -74,7 +79,9 @@ function addOpcao() {
 }
 
 function removeOpcao(index: number) {
-  form.value.opcoes.splice(index, 1)
+  if (form.value.opcoes) {
+    form.value.opcoes.splice(index, 1)
+  }
 }
 
 async function handleSubmit() {
@@ -87,10 +94,19 @@ async function handleSubmit() {
   error.value = ''
 
   try {
-    await botService.salvarEtapa(form.value)
+    // --- LÓGICA CORRIGIDA: DECIDE ENTRE POST E PUT ---
+    if (form.value.id) {
+      // Tem ID? É Edição -> PUT
+      await botService.atualizarEtapa(form.value.id, form.value)
+    } else {
+      // Não tem ID? É Novo -> POST
+      await botService.criarEtapa(form.value)
+    }
+    
     await loadEtapas()
     closeModal()
   } catch (e: any) {
+    console.error(e)
     error.value = e.response?.data?.message || 'Erro ao salvar etapa'
   } finally {
     saving.value = false
@@ -150,7 +166,6 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6 animate-fade-in">
-    <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
         <p class="text-slate-400">Configure as etapas e opções do bot de atendimento</p>
@@ -163,7 +178,6 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Info Card -->
     <div class="card bg-blue-500/5 border-blue-500/20">
       <div class="flex gap-3">
         <svg class="w-6 h-6 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +192,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Loading -->
     <div v-if="loading" class="space-y-4">
       <div v-for="i in 3" :key="i" class="card animate-pulse">
         <div class="h-4 bg-slate-700 rounded w-1/4 mb-3"></div>
@@ -190,7 +203,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-else-if="etapas.length === 0" class="card text-center py-12">
       <svg class="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -202,7 +214,6 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Etapas List -->
     <div v-else class="space-y-4">
       <div 
         v-for="(etapa, index) in etapas" 
@@ -276,14 +287,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Modal -->
     <Modal 
       :show="showModal" 
       :title="editingEtapa ? 'Editar Etapa' : 'Nova Etapa'"
       @close="closeModal"
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
-        <!-- Error -->
         <div 
           v-if="error" 
           class="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm"
@@ -311,7 +320,6 @@ onMounted(() => {
           ></textarea>
         </div>
 
-        <!-- Opções -->
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="label mb-0">Botões / Opções</label>
@@ -324,7 +332,7 @@ onMounted(() => {
             </button>
           </div>
 
-          <div v-if="form.opcoes.length === 0" class="text-sm text-slate-500 text-center py-4 bg-slate-800 rounded-lg">
+          <div v-if="!form.opcoes || form.opcoes.length === 0" class="text-sm text-slate-500 text-center py-4 bg-slate-800 rounded-lg">
             Nenhuma opção adicionada
           </div>
 
@@ -354,7 +362,7 @@ onMounted(() => {
                 </optgroup>
                 <optgroup label="Ir para outra Etapa">
                   <option 
-                    v-for="etapaOpt in etapas.filter(e => e.id !== form.id)" 
+                    v-for="etapaOpt in etapas.filter(e => String(e.id) !== String(form.id))" 
                     :key="etapaOpt.id" 
                     :value="'etapa:' + etapaOpt.id"
                   >
