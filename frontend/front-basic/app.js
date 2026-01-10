@@ -77,6 +77,44 @@ const ui = {
 let selectedTransferId = null;
 let editingClientId = null;
 
+
+let stompClient = null;
+
+function connectWebSocket() {
+    // 1. Conecta no endpoint que criamos no Java (/ws)
+    const socket = new SockJS(API_URL + '/ws');
+    stompClient = Stomp.over(socket);
+
+    // Desativa logs chatos no console (opcional)
+    stompClient.debug = null; 
+
+    stompClient.connect({}, function (frame) {
+        console.log('Conectado ao WebSocket: ' + frame);
+
+        // 2. INSCRIÇÃO: ATUALIZAÇÃO DA LISTA LATERAL (Painel Geral)
+        stompClient.subscribe('/topic/painel', function (msg) {
+            // Quando alguém mandar msg, recarrega a lista lateral pra atualizar a bolinha e última msg
+            loadConversations();
+            
+            // Se estiver no dashboard, atualiza os números também
+            if(document.getElementById('view-dashboard').classList.contains('active')){
+                loadDashboard();
+            }
+        });
+
+        // 3. INSCRIÇÃO DINÂMICA: CHAT ABERTO
+        // Essa parte é tricky: quando abrimos um chat, precisamos "ouvir" só ele.
+        // Vou fazer essa lógica dentro da função openChat() logo abaixo.
+
+    }, function(error){
+        console.error("Erro no WebSocket, tentando reconectar em 5s...", error);
+        setTimeout(connectWebSocket, 5000);
+    });
+}
+
+// Chame isso no initApp() ao invés do setInterval
+// initApp() { ... connectWebSocket(); ... }
+
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
     if (state.token) initApp();
@@ -155,16 +193,19 @@ ui.sidebar.btnLogout.addEventListener('click', () => {
 // --- LÓGICA PRINCIPAL ---
 function initApp() {
     showScreen('app');
+   
     // Começa no chat
     navigate('chat');
     
     document.getElementById('display-username').textContent = state.userLogin || 'Você';
     
     loadConversations();
-    setInterval(loadConversations, 4000); 
-    setInterval(() => {
-        if(state.currentChatId) loadMessages(state.currentChatId);
-    }, 3000); 
+
+    connectWebSocket();
+    //setInterval(loadConversations, 4000); 
+    //setInterval(() => {
+     //   if(state.currentChatId) loadMessages(state.currentChatId);
+    //}, 3000); 
 
     // Configura clique no header para editar cliente
     if(ui.chatHeaderName) {
@@ -292,6 +333,8 @@ function renderConversations(list) {
     });
 }
 // --- CHAT ---
+let currentChatSubscription = null; // Variável global para controlar a inscrição do chat atual
+
 function openChat(c) {
     state.currentChatId = c.conversaId;
     const displayName = c.nomeCliente || formatPhone(c.telefoneCliente);
@@ -324,9 +367,28 @@ function openChat(c) {
     // Scroll para o topo (importante para mobile)
     ui.chat.box.scrollTop = 0;
     
-    // Carrega mensagens
+    // Carrega mensagens (Carga inicial via HTTP)
     loadMessages(c.conversaId, true);
     renderConversations(state.conversationsCache);
+
+    // --- LÓGICA WEBSOCKET ESPECÍFICA DESTE CHAT ---
+    
+    // 1. Se já estava ouvindo outro chat (o anterior), cancela para não misturar as mensagens
+    if (currentChatSubscription) {
+        currentChatSubscription.unsubscribe();
+        currentChatSubscription = null;
+    }
+
+    // 2. Se o WebSocket está conectado, assina o tópico desta conversa específica
+    if (stompClient && stompClient.connected) {
+        currentChatSubscription = stompClient.subscribe(`/topic/conversa/${c.conversaId}`, function (msg) {
+            // QUANDO O SERVIDOR AVISAR "NOVA MENSAGEM":
+            console.log('🔔 Nova mensagem recebida via Socket!');
+            
+            // Recarrega as mensagens imediatamente (Scroll automático ativado)
+            loadMessages(c.conversaId, true); 
+        });
+    }
 }
 
 // Adicione também um listener para o btnBack (seta) para garantir limpeza

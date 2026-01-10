@@ -1,5 +1,6 @@
 package thiagosbarros.com.conversazap.application.service;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontradaException;
 import thiagosbarros.com.conversazap.domain.enums.OrigemMensagem;
@@ -25,6 +26,7 @@ public class AtendimentoService {
     private final HorarioAtendimentoService horarioAtendimentoService;
     private final MensagemAutomaticaService mensagemAutomaticaService;
     private final EnvioMensagemGateway  envioMensagemGateway;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public AtendimentoService(
             EmpresaRepository empresaRepository,
@@ -34,7 +36,8 @@ public class AtendimentoService {
             BotService botService,
             HorarioAtendimentoService horarioAtendimentoService,
             MensagemAutomaticaService mensagemAutomaticaService,
-            EnvioMensagemGateway envioMensagemGateway
+            EnvioMensagemGateway envioMensagemGateway,
+            SimpMessagingTemplate messagingTemplate
             ) {
         this.empresaRepository = empresaRepository;
         this.clienteRepository = clienteRepository;
@@ -44,6 +47,7 @@ public class AtendimentoService {
         this.horarioAtendimentoService = horarioAtendimentoService;
         this.mensagemAutomaticaService = mensagemAutomaticaService;
         this.envioMensagemGateway = envioMensagemGateway;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -64,7 +68,9 @@ public class AtendimentoService {
         Conversa conversa = conversaOpt.orElseGet(() ->
                 conversaRepository.save(new Conversa(cliente)));
 
-        mensagemRepository.save(new Mensagem(conversa, OrigemMensagem.CLIENTE, texto));
+         Mensagem mensagemCliente =  new Mensagem(conversa, OrigemMensagem.CLIENTE, texto);
+         mensagemRepository.save(mensagemCliente);
+         notificarFrontend(conversa);
 
         if(!horarioAtendimentoService.estaDentroDoHorario(LocalDateTime.now())){
             String resposta = mensagemAutomaticaService.foraDoHorario();
@@ -78,6 +84,7 @@ public class AtendimentoService {
             mensagemRepository.save(new Mensagem(conversa, OrigemMensagem.BOT, respostaBot));
 
             envioMensagemGateway.enviarMensagem(telefoneCliente,respostaBot);
+            notificarFrontend(conversa);
 
             return respostaBot;
         }
@@ -86,6 +93,17 @@ public class AtendimentoService {
         conversaRepository.save(conversa);
 
         return "👤 Um atendente irá te responder em breve.";
+    }
+
+    private void notificarFrontend(Conversa conversa) {
+        // Vamos mandar um sinal para o tópico específico dessa conversa
+        // Quem estiver "ouvindo" o tópico "/topic/conversas/{id}" vai receber.
+        // Enviamos o ID da conversa apenas para avisar "tem coisa nova, atualiza aí".
+        messagingTemplate.convertAndSend("/topic/conversa/" + conversa.getId(), "Nova mensagem");
+
+        // Também avisamos o painel geral para atualizar a lista lateral (bolinha verde, última msg)
+        messagingTemplate.convertAndSend("/topic/painel", "Atualizar Lista");
+
     }
 
     @Transactional(readOnly = true)

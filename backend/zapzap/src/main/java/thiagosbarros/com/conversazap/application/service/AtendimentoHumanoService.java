@@ -1,6 +1,7 @@
 package thiagosbarros.com.conversazap.application.service;
 
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -30,16 +31,19 @@ public class AtendimentoHumanoService {
     private final MensagemRepository mensagemRepository;
     private final SecurityService securityService;
     private final UsuarioRepository usuarioRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public AtendimentoHumanoService(
             ConversaRepository conversaRepository,
             MensagemRepository mensagemRepository,
             SecurityService securityService,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            SimpMessagingTemplate messagingTemplate) {
         this.conversaRepository = conversaRepository;
         this.mensagemRepository = mensagemRepository;
         this.securityService = securityService;
         this.usuarioRepository = usuarioRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
 
@@ -118,6 +122,9 @@ public class AtendimentoHumanoService {
         mensagemRepository.save(
                 new Mensagem(conversa, OrigemMensagem.HUMANO, texto,usuarioLogado)
         );
+
+        notificarFrontend(conversa);
+
     }
     @Transactional
     public void encerrar(Long conversaId) {
@@ -163,5 +170,16 @@ public class AtendimentoHumanoService {
         );
 
         conversaRepository.save(conversa);
+    }
+
+    private void notificarFrontend(Conversa conversa) {
+        // Vamos mandar um sinal para o tópico específico dessa conversa
+        // Quem estiver "ouvindo" o tópico "/topic/conversas/{id}" vai receber.
+        // Enviamos o ID da conversa apenas para avisar "tem coisa nova, atualiza aí".
+        messagingTemplate.convertAndSend("/topic/conversa/" + conversa.getId(), "Nova mensagem");
+
+        // Também avisamos o painel geral para atualizar a lista lateral (bolinha verde, última msg)
+        messagingTemplate.convertAndSend("/topic/painel", "Atualizar Lista");
+
     }
 }
