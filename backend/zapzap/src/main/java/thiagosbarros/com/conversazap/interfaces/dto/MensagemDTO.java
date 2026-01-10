@@ -9,14 +9,15 @@ public class MensagemDTO {
     private LocalDateTime data;
     private Long idUsuario;
     private String nomeAtendente;
+    private boolean lida;
 
-    public MensagemDTO(String origem, String texto, LocalDateTime data, Long idUsuario, String nomeAtendente) {
+    public MensagemDTO(String origem, String texto, LocalDateTime data, Long idUsuario, String nomeAtendente, boolean lida) {
         this.origem = origem;
         this.texto = texto;
         this.data = data;
         this.idUsuario = idUsuario;
         this.nomeAtendente = nomeAtendente;
-
+        this.lida = lida;
     }
 
     public String getOrigem() {
@@ -31,11 +32,15 @@ public class MensagemDTO {
         return data;
     }
 
-    private Long getIdUsuario() {
+    public Long getIdUsuario() {
         return idUsuario;
     }
 
-    private String getNomeAtendente() {
+    public String getNomeAtendente() {
         return nomeAtendente;
+    }
+
+    public boolean isLida() {
+        return lida;
     }
 }

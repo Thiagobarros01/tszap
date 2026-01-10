@@ -104,7 +104,8 @@ public class SecurityConfiguration {
         CorsConfiguration configCors = new CorsConfiguration();
 
         configCors.setAllowedOrigins(List.of(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:5173"
         ));
         configCors.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"

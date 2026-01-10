@@ -96,8 +96,8 @@ public class AtendimentoHumanoService {
                         m.getTexto(),
                         m.getData(),
                         m.getUsuario() != null ? m.getUsuario().getId() : null,
-                        m.getUsuario() != null ? m.getUsuario().getLogin() : null
-
+                        m.getUsuario() != null ? m.getUsuario().getLogin() : null,
+                        m.isLida()
                 ))
                 .toList();
     }

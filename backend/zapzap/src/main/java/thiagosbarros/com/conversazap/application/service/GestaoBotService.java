@@ -116,6 +116,7 @@ public class GestaoBotService {
         dto.setMensagem(e.getMensagem());
         dto.setInicial(e.isInicial());
 
+
         if(e.getOpcoes() != null){
             List<OpcaoBotDTO> opBots = e.getOpcoes().stream().map(op -> {
                 OpcaoBotDTO opDtos = new OpcaoBotDTO();
@@ -127,6 +128,7 @@ public class GestaoBotService {
                 }
                 return opDtos;
             }).toList();
+            dto.setOpcoes(opBots);
         }
         return dto;
     }
