@@ -19,7 +19,7 @@ export enum Departamento {
 
 export enum OrigemMensagem {
   CLIENTE = 'CLIENTE',
-  ATENDENTE = 'ATENDENTE',
+  HUMANO = 'HUMANO',
   BOT = 'BOT'
 }
 
@@ -70,6 +70,23 @@ export interface ClienteResponse {
 export interface Usuario {
   login: string
   senha: string
+  email: string
+  role: Role
+  departamento: Departamento
+}
+
+export interface UsuarioForm {
+  id?: number
+  login: string
+  senha?: string
+  email: string
+  role: Role
+  departamento: Departamento
+}
+
+
+export interface AtualizarUsuarioDTO {
+  login: string
   email: string
   role: Role
   departamento: Departamento

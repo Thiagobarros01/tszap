@@ -13,13 +13,14 @@ const showModal = ref(false)
 const saving = ref(false)
 const error = ref('')
 
-const form = ref<Usuario>({
+const form = ref<UsuarioForm>({
   login: '',
   senha: '',
   email: '',
   role: Role.ATENDENTE,
   departamento: Departamento.COMERCIAL
 })
+
 
 const roles = [
   { value: Role.ADMIN, label: 'Administrador' },
@@ -56,13 +57,31 @@ function openNewModal() {
   showModal.value = true
 }
 
+function openEditModal(usuario: UsuarioResumo) {
+  form.value = {
+    id: usuario.id,
+    login: usuario.login,
+    email: usuario.email,
+    role: usuario.role,
+    departamento: usuario.departamento
+  }
+
+  error.value = ''
+  showModal.value = true
+}
+
 function closeModal() {
   showModal.value = false
 }
 
 async function handleSubmit() {
-  if (!form.value.login || !form.value.senha || !form.value.email) {
-    error.value = 'Todos os campos são obrigatórios'
+  if (!form.value.login || !form.value.email) {
+    error.value = 'Login e email são obrigatórios'
+    return
+  }
+
+  if (!form.value.id && !form.value.senha) {
+    error.value = 'Senha é obrigatória na criação'
     return
   }
 
@@ -70,7 +89,25 @@ async function handleSubmit() {
   error.value = ''
 
   try {
-    await usuarioService.salvar(form.value)
+    if (form.value.id) {
+      // 🔵 EDITAR
+      await usuarioService.atualizar(form.value.id, {
+        login: form.value.login,
+        email: form.value.email,
+        role: form.value.role,
+        departamento: form.value.departamento
+      })
+    } else {
+      // 🟢 CRIAR
+      await usuarioService.salvar({
+        login: form.value.login,
+        senha: form.value.senha!,
+        email: form.value.email,
+        role: form.value.role,
+        departamento: form.value.departamento
+      })
+    }
+
     await loadUsuarios()
     closeModal()
   } catch (e: any) {
@@ -79,6 +116,7 @@ async function handleSubmit() {
     saving.value = false
   }
 }
+
 
 function getRoleLabel(role: Role): string {
   return role === Role.ADMIN ? 'Administrador' : 'Atendente'
@@ -150,8 +188,10 @@ onMounted(() => {
             <th class="text-left px-6 py-4 text-sm font-medium text-slate-400">Email</th>
             <th class="text-left px-6 py-4 text-sm font-medium text-slate-400">Perfil</th>
             <th class="text-left px-6 py-4 text-sm font-medium text-slate-400">Departamento</th>
+            <th v-if="authStore.isAdmin" class="text-right px-6 py-4 text-sm font-medium text-slate-400">Ações</th>
           </tr>
         </thead>
+        
         <tbody class="divide-y divide-slate-800">
           <tr 
             v-for="usuario in usuarios" 
@@ -177,6 +217,32 @@ onMounted(() => {
             <td class="px-6 py-4 text-slate-300">
               {{ getDepartamentoLabel(usuario.departamento) }}
             </td>
+            <td 
+  v-if="authStore.isAdmin"
+  class="px-6 py-4 text-right"
+>
+  <button
+    @click="openEditModal(usuario)"
+    class="text-blue-400 hover:text-blue-300 transition"
+    title="Editar usuário"
+  >
+    <!-- ícone de lápis -->
+    <svg 
+      class="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path 
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+      />
+    </svg>
+  </button>
+</td>
+
           </tr>
         </tbody>
       </table>
@@ -185,9 +251,10 @@ onMounted(() => {
     <!-- Modal -->
     <Modal 
       :show="showModal" 
-      title="Novo Usuário"
+      :title="form.id ? 'Editar Usuário' : 'Novo Usuário'"
       @close="closeModal"
     >
+
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <!-- Error -->
         <div 
@@ -207,7 +274,7 @@ onMounted(() => {
           />
         </div>
 
-        <div>
+       <div v-if="!form.id">
           <label class="label">Senha *</label>
           <input 
             v-model="form.senha" 
@@ -216,7 +283,6 @@ onMounted(() => {
             placeholder="Senha"
           />
         </div>
-
         <div>
           <label class="label">Email *</label>
           <input 
