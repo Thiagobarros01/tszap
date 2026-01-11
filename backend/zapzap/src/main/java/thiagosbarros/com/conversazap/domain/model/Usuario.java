@@ -2,6 +2,7 @@ package thiagosbarros.com.conversazap.domain.model;
 import jakarta.persistence.*;
 import thiagosbarros.com.conversazap.domain.enums.Departamento;
 import thiagosbarros.com.conversazap.domain.enums.Role;
+import thiagosbarros.com.conversazap.interfaces.dto.AtualizarUsuarioDTO;
 
 import java.util.Objects;
 
@@ -97,6 +98,14 @@ public class Usuario {
 
     public void definirNome(String nome) {
         this.nomeUsuario = nome;
+    }
+
+    public void atualizarDadosUsuario(AtualizarUsuarioDTO usuarioDTO) {
+        this.login = usuarioDTO.getLogin();
+        this.email = usuarioDTO.getEmail();
+        this.role = usuarioDTO.getRole();
+        this.departamento = usuarioDTO.getDepartamento();
+
     }
 
     @Override

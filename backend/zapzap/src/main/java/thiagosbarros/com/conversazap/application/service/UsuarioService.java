@@ -4,9 +4,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import thiagosbarros.com.conversazap.application.exception.EmpresaNaoEncontradaException;
-import thiagosbarros.com.conversazap.interfaces.dto.UsuarioDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.AtualizarUsuarioDTO;
+import thiagosbarros.com.conversazap.interfaces.dto.CriarUsuarioDTO;
 import thiagosbarros.com.conversazap.application.exception.UsuarioNaoEncontradoException;
-import thiagosbarros.com.conversazap.domain.model.Empresa;
 import thiagosbarros.com.conversazap.domain.model.Usuario;
 import thiagosbarros.com.conversazap.domain.repository.EmpresaRepository;
 import thiagosbarros.com.conversazap.domain.repository.UsuarioRepository;
@@ -32,7 +32,7 @@ public class UsuarioService {
         this.securityService = securityService;
     }
     @Transactional
-    public void salvar(UsuarioDTO dto){
+    public void salvar(CriarUsuarioDTO dto){
         Usuario usuarioLogado = securityService.usuarioLogado();
         Long idEmpresaUsuario = usuarioLogado.getEmpresa().getId();
 
@@ -43,6 +43,18 @@ public class UsuarioService {
 
         Usuario usuario = new Usuario(dto.getLogin(),dto.getEmail(),senhaCriptografada,dto.getRole(),empresa,dto.getDepartamento());
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public UsuarioResumoDTO atualizar(Long id, AtualizarUsuarioDTO dto){
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(()-> new UsuarioNaoEncontradoException("Usuario não encontrado"));
+
+        usuario.atualizarDadosUsuario(dto);
+
+        return toDto(usuarioRepository.save(usuario));
+
     }
 
     @Transactional(readOnly = true)
@@ -76,5 +88,9 @@ public class UsuarioService {
                         u.getDepartamento()
                 ))
                 .orElseThrow(()-> new UsuarioNaoEncontradoException("Usuario não encontrado!"));
+    }
+
+    public UsuarioResumoDTO toDto(Usuario usuario){
+        return new UsuarioResumoDTO(usuario.getId(), usuario.getLogin(), usuario.getEmail(), usuario.getRole(), usuario.getDepartamento());
     }
 }
