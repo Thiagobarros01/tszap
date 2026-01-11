@@ -26,8 +26,8 @@ function handleRefresh() {
 </script>
 
 <template>
-  <div class="h-[calc(100vh-7rem)] flex gap-4 animate-fade-in">
-    <div class="w-80 min-w-[280px] flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shrink-0">
+  <div class="h-[calc(100vh-7rem)] flex gap-4 animate-fade-in overflow-hidden">
+   <div class="w-80 min-w-[280px] flex flex-col bg-slate-900 border border-slate-800 rounded-xl shrink-0">
       <div class="p-4 border-b border-slate-800">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-semibold text-white">Conversas</h2>
