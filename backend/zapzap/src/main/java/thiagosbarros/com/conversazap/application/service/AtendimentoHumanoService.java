@@ -57,9 +57,9 @@ public class AtendimentoHumanoService {
         List<Conversa> conversas;
 
         if(usuarioLogado.getRole() == Role.ADMIN || usuarioLogado.getDepartamento() == null) {
-            conversas = conversaRepository.findByCliente_EmpresaAndStatusNot(empresa, StatusConversa.ENCERRADA);
+            conversas = conversaRepository.findConversasRecentes(empresa, StatusConversa.ENCERRADA);
         } else {
-          conversas = conversaRepository.findByCliente_EmpresaAndStatusNotAndDepartamento(
+          conversas = conversaRepository.findConversasRecentesPorDepartamento(
                     empresa,
                     StatusConversa.ENCERRADA,
                     usuarioLogado.getDepartamento());
@@ -133,6 +133,7 @@ public class AtendimentoHumanoService {
 
         conversa.encerrarAtendimento();
         conversaRepository.save(conversa);
+        notificarFrontend(conversa);
     }
 
     @Transactional
