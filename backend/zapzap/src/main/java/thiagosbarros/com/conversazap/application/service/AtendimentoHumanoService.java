@@ -111,7 +111,7 @@ public class AtendimentoHumanoService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(() -> new RuntimeException("Conversa não encontrada"));
 
-        if (conversa.getUsuarioAtual() == null) {
+        if (conversa.getUsuarioAtual() == null || conversa.getStatus().equals(StatusConversa.BOT)) {
             conversa.assumirConversa(usuarioLogado);
         }
 
@@ -128,9 +128,13 @@ public class AtendimentoHumanoService {
     }
     @Transactional
     public void encerrar(Long conversaId) {
+        Usuario usuarioLogado = securityService.usuarioLogado();
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(() -> new RuntimeException("Conversa não encontrada"));
 
+        if(!usuarioLogado.equals(conversa.getUsuarioAtual()) && usuarioLogado.getRole() != Role.ADMIN){
+            throw new BusinessException("Usuário não pode encerrar o chat, não é o atendente atual da conversa");
+        }
         conversa.encerrarAtendimento();
         conversaRepository.save(conversa);
         notificarFrontend(conversa);
@@ -143,7 +147,7 @@ public class AtendimentoHumanoService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(()-> new ConversaNaoEncontradaException("Conversa não encontrada"));
 
-        if (conversa.getUsuarioAtual() == null || !usuarioLogado.equals(conversa.getUsuarioAtual())) {
+        if (conversa.getUsuarioAtual() == null && !usuarioLogado.equals(conversa.getUsuarioAtual()) && usuarioLogado.getRole() != Role.ADMIN) {
             throw new BusinessException("Usuário não é atendente atual da conversa");
         }
 

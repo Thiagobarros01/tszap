@@ -84,6 +84,7 @@ public class Conversa {
 
     public void assumirConversa(Usuario usuarioAtual) {
         this.usuarioAtual = usuarioAtual;
+        this.status = StatusConversa.HUMANO;
     }
 
     public Long getId() {
