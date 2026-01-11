@@ -9,5 +9,5 @@ import thiagosbarros.com.conversazap.domain.model.Mensagem;
 import java.util.List;
 
 public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
-    Page<Mensagem> findByConversaOrderByDataAsc(Conversa conversa, Pageable pageable);
+    Page<Mensagem> findByConversa(Conversa conversa, Pageable pageable);
 }

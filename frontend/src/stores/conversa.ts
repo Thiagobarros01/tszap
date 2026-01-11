@@ -135,15 +135,13 @@ export const useConversaStore = defineStore('conversa', () => {
     }
 
     // Assina o tópico específico da conversa
-    currentChatSubscription.value = stompClient.value.subscribe(`/topic/conversa/${idConversa}`, async  () => {
-      console.log(`🔔 Nova mensagem na conversa ${idConversa}`)
-      // Atualiza as mensagens imediatamente
-     const pageMensagens = await atendimentoService.buscarMensagens(idConversa,0,20)
-        mensagens.value = pageMensagens.content
-        totalPaginas.value = pageMensagens.totalPages
-        paginaAtual.value = pageMensagens.number
-        // Opcional: Tocar som aqui
-    })
+    currentChatSubscription.value = stompClient.value.subscribe(
+  `/topic/conversa/${idConversa}`,
+  (msg: any) => {
+    const novaMensagem: Mensagem = JSON.parse(msg.body)
+    mensagens.value.push(novaMensagem)
+  }
+)
   }
 
   // --- ACTIONS DE MENSAGEM ---

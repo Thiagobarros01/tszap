@@ -44,6 +44,15 @@ export interface Mensagem {
   lida: boolean
 }
 
+export interface Page<T> {
+  content: T[];      // lista real
+  totalElements: number;
+  totalPages: number;
+  number: number;    // página atual
+  size: number;      // tamanho da página
+}
+
+
 // DTOs de Dashboard
 export interface Dashboard {
   totalConversas: number

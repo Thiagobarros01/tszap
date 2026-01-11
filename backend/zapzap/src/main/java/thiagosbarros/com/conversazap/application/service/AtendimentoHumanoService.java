@@ -4,6 +4,7 @@ package thiagosbarros.com.conversazap.application.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -96,9 +97,13 @@ public class AtendimentoHumanoService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(()-> new RuntimeException("Conversa não encontrada."));
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "data")
+        );
 
-        return mensagemRepository.findByConversaOrderByDataAsc(conversa,pageable)
+        return mensagemRepository.findByConversa(conversa,pageable)
                 .map(
                         m-> new MensagemDTO(
                         m.getOrigem().name(),
@@ -123,11 +128,14 @@ public class AtendimentoHumanoService {
             throw new BusinessException("Usuário não é o atendente atual da conversa");
         }
 
-        mensagemRepository.save(
-                new Mensagem(conversa, OrigemMensagem.HUMANO, texto,usuarioLogado)
+        Mensagem mensagem = mensagemRepository.save(
+                new Mensagem(conversa, OrigemMensagem.HUMANO, texto, usuarioLogado)
         );
 
-        notificarFrontend(conversa);
+        MensagemDTO dto = toDto(mensagem);
+
+        notificarNovaMensagem(conversa, dto);
+        notificarPainel(conversa);
 
     }
     @Transactional
@@ -141,7 +149,7 @@ public class AtendimentoHumanoService {
         }
         conversa.encerrarAtendimento();
         conversaRepository.save(conversa);
-        notificarFrontend(conversa);
+        notificarPainel(conversa);
     }
 
     @Transactional
@@ -181,14 +189,30 @@ public class AtendimentoHumanoService {
         conversaRepository.save(conversa);
     }
 
-    private void notificarFrontend(Conversa conversa) {
-        // Vamos mandar um sinal para o tópico específico dessa conversa
-        // Quem estiver "ouvindo" o tópico "/topic/conversas/{id}" vai receber.
-        // Enviamos o ID da conversa apenas para avisar "tem coisa nova, atualiza aí".
-        messagingTemplate.convertAndSend("/topic/conversa/" + conversa.getId(), "Nova mensagem");
+    private void notificarPainel(Conversa conversa) {
+        messagingTemplate.convertAndSend(
+                "/topic/painel",
+                conversa.getId()
+        );
+    }
 
-        // Também avisamos o painel geral para atualizar a lista lateral (bolinha verde, última msg)
-        messagingTemplate.convertAndSend("/topic/painel", "Atualizar Lista");
 
+    private void notificarNovaMensagem(Conversa conversa, MensagemDTO dto) {
+        messagingTemplate.convertAndSend(
+                "/topic/conversa/" + conversa.getId(),
+                dto
+        );
+    }
+
+
+    public MensagemDTO toDto(Mensagem mensagem) {
+        return new MensagemDTO(
+                mensagem.getOrigem().name(),
+                mensagem.getTexto(),
+                mensagem.getData(),
+                mensagem.getUsuario() != null ? mensagem.getUsuario().getId() : null,
+                mensagem.getUsuario() != null ? mensagem.getUsuario().getLogin() : null
+
+        );
     }
 }
