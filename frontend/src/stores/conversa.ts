@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { atendimentoService } from '@/services/atendimentoService'
 import type { ConversaResumo, Mensagem } from '@/types'
+
 // @ts-ignore
 import SockJS from 'sockjs-client/dist/sockjs'
 // @ts-ignore
@@ -14,6 +15,9 @@ export const useConversaStore = defineStore('conversa', () => {
   const mensagens = ref<Mensagem[]>([])
   const loading = ref(false)
   const loadingMensagens = ref(false)
+  const paginaAtual = ref(0)
+  const totalPaginas = ref(0)
+  const tamanhoPagina = ref(20)
 
   // Estado do WebSocket
   const stompClient = ref<any>(null)
@@ -42,7 +46,12 @@ export const useConversaStore = defineStore('conversa', () => {
     // 2. Carrega mensagens via HTTP (histórico)
     try {
       // ATENÇÃO: Usei 'id' aqui pq o Java manda 'id'. Confirme no seu types/index.ts
-      mensagens.value = await atendimentoService.buscarMensagens(conversa.conversaId)
+      const pageMensagens = await atendimentoService.buscarMensagens(conversa.conversaId,0,20)
+      mensagens.value = pageMensagens.content
+      paginaAtual.value = pageMensagens.number
+      totalPaginas.value = pageMensagens.totalPages
+
+
       if (conversa.naoLidas > 0) {
         await atendimentoService.marcarComoLida(conversa.conversaId)
         conversa.naoLidas = 0
@@ -126,13 +135,14 @@ export const useConversaStore = defineStore('conversa', () => {
     }
 
     // Assina o tópico específico da conversa
-    currentChatSubscription.value = stompClient.value.subscribe(`/topic/conversa/${idConversa}`, () => {
+    currentChatSubscription.value = stompClient.value.subscribe(`/topic/conversa/${idConversa}`, async  () => {
       console.log(`🔔 Nova mensagem na conversa ${idConversa}`)
       // Atualiza as mensagens imediatamente
-      atendimentoService.buscarMensagens(idConversa).then(msgs => {
-        mensagens.value = msgs
+     const pageMensagens = await atendimentoService.buscarMensagens(idConversa,0,20)
+        mensagens.value = pageMensagens.content
+        totalPaginas.value = pageMensagens.totalPages
+        paginaAtual.value = pageMensagens.number
         // Opcional: Tocar som aqui
-      })
     })
   }
 
@@ -163,13 +173,17 @@ export const useConversaStore = defineStore('conversa', () => {
   }
 
   function limparSelecao() {
-    if (currentChatSubscription.value) {
-      currentChatSubscription.value.unsubscribe()
-      currentChatSubscription.value = null
-    }
-    conversaSelecionada.value = null
-    mensagens.value = []
+  if (currentChatSubscription.value) {
+    currentChatSubscription.value.unsubscribe()
+    currentChatSubscription.value = null
   }
+
+  conversaSelecionada.value = null
+  mensagens.value = []
+  paginaAtual.value = 0
+  totalPaginas.value = 0
+}
+
 
   return {
     conversas,

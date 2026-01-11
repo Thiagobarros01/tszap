@@ -1,6 +1,9 @@
 package thiagosbarros.com.conversazap.application.service;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -89,21 +92,22 @@ public class AtendimentoHumanoService {
 
 
     @Transactional(readOnly = true)
-    public List<MensagemDTO> buscarMensagens(Long conversaId){
+    public Page<MensagemDTO> buscarMensagens(Long conversaId, int page, int size) {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(()-> new RuntimeException("Conversa não encontrada."));
 
-        return mensagemRepository.findByConversaOrderByDataAsc(conversa)
-                .stream().map(
+        Pageable pageable = PageRequest.of(page, size);
+
+        return mensagemRepository.findByConversaOrderByDataAsc(conversa,pageable)
+                .map(
                         m-> new MensagemDTO(
                         m.getOrigem().name(),
                         m.getTexto(),
                         m.getData(),
                         m.getUsuario() != null ? m.getUsuario().getId() : null,
                         m.getUsuario() != null ? m.getUsuario().getLogin() : null
-
                 ))
-                .toList();
+                ;
     }
     @Transactional
     public void responder(Long conversaId, String texto) {

@@ -1,5 +1,6 @@
 package thiagosbarros.com.conversazap.infrastructure.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import thiagosbarros.com.conversazap.application.service.AtendimentoHumanoService;
@@ -30,8 +31,10 @@ public class PainelAtendimentoController {
     }
 
     @GetMapping("/conversas/{id}/mensagens")
-    public ResponseEntity<List<MensagemDTO>> buscarMensagens(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarMensagens(id));
+    public ResponseEntity<Page<MensagemDTO>> buscarMensagens(@PathVariable Long id,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size ) {
+        return ResponseEntity.ok(service.buscarMensagens(id, page, size));
     }
 
     @PostMapping("/conversas/{id}/responder")

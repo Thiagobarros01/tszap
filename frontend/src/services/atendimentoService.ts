@@ -1,5 +1,6 @@
 import api from './api'
 import type { ConversaResumo, Mensagem, Dashboard, ResponderMensagem } from '@/types'
+import type { Page } from '@/types/index'
 
 export const atendimentoService = {
   async listarConversas(): Promise<ConversaResumo[]> {
@@ -7,8 +8,8 @@ export const atendimentoService = {
     return response.data
   },
 
-  async buscarMensagens(conversaId: number): Promise<Mensagem[]> {
-    const response = await api.get<Mensagem[]>(`/painel/atendimento/conversas/${conversaId}/mensagens`)
+  async buscarMensagens(conversaId: number, page:number=0, size:number=20):  Promise<Page<Mensagem>> {
+    const response = await api.get<Page<Mensagem>>(`/painel/atendimento/conversas/${conversaId}/mensagens?page=${page}&size=${size}`)
     return response.data
   },
 
