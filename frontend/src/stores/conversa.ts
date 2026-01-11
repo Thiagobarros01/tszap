@@ -41,6 +41,7 @@ export const useConversaStore = defineStore('conversa', () => {
     
     // 2. Carrega mensagens via HTTP (histórico)
     try {
+      // ATENÇÃO: Usei 'id' aqui pq o Java manda 'id'. Confirme no seu types/index.ts
       mensagens.value = await atendimentoService.buscarMensagens(conversa.conversaId)
       if (conversa.naoLidas > 0) {
         await atendimentoService.marcarComoLida(conversa.conversaId)
@@ -54,12 +55,33 @@ export const useConversaStore = defineStore('conversa', () => {
     inscreverNoChat(conversa.conversaId)
   }
 
-  // --- LÓGICA WEBSOCKET ---
+  // --- LÓGICA WEBSOCKET & ORDENAÇÃO (O SEGREDO) ---
+
+  function moverParaTopo(idConversa: number) {
+    // Procura a conversa na lista atual (memória)
+    const index = conversas.value.findIndex(c => c.conversaId === idConversa)
+
+    if (index > -1) {
+      // 1. Remove da posição atual e guarda
+      const [conversa] = conversas.value.splice(index, 1)
+      
+      // 2. Se não for a conversa que estou lendo agora, aumenta o contador de não lidas
+      if (!conversaSelecionada.value || conversaSelecionada.value.conversaId !== idConversa) {
+          conversa.naoLidas++
+      }
+
+      // 3. Coloca no topo da lista (início do array)
+      conversas.value.unshift(conversa)
+    } else {
+      // Se não achou (é conversa nova que não estava na lista), busca do servidor
+      console.log('Conversa nova detectada, recarregando lista...')
+      carregarConversas(false)
+    }
+  }
 
   function conectarWebSocket() {
     if (stompClient.value && stompClient.value.connected) return
 
-    // Ajuste a URL se seu backend não estiver no localhost:8080
     const socket = new SockJS('http://localhost:8080/ws')
     const client = Stomp.over(socket)
     
@@ -70,9 +92,17 @@ export const useConversaStore = defineStore('conversa', () => {
       stompClient.value = client
 
       // 1. OUVIR O PAINEL (Atualizações da lista lateral)
-      client.subscribe('/topic/painel', () => {
-        console.log('🔔 Atualização recebida no painel')
-        carregarConversas(false) // Recarrega lista sem loading spinner
+      client.subscribe('/topic/painel', (msg: any) => {
+        // O backend agora manda o ID da conversa no corpo da mensagem
+        const idConversa = parseInt(msg.body)
+
+        if (!isNaN(idConversa)) {
+            // Mágica: Sobe pro topo sem ir no servidor
+            moverParaTopo(idConversa)
+        } else {
+            // Fallback: se não vier ID, recarrega tudo
+            carregarConversas(false) 
+        }
       })
 
       // Se reconectar e já tiver conversa aberta, reassina
@@ -86,7 +116,7 @@ export const useConversaStore = defineStore('conversa', () => {
     })
   }
 
-  function inscreverNoChat(conversaId: number) {
+  function inscreverNoChat(idConversa: number) {
     if (!stompClient.value || !stompClient.value.connected) return
 
     // Se já ouvia outro chat, cancela para não misturar
@@ -96,12 +126,12 @@ export const useConversaStore = defineStore('conversa', () => {
     }
 
     // Assina o tópico específico da conversa
-    currentChatSubscription.value = stompClient.value.subscribe(`/topic/conversa/${conversaId}`, () => {
-      console.log(`🔔 Nova mensagem na conversa ${conversaId}`)
+    currentChatSubscription.value = stompClient.value.subscribe(`/topic/conversa/${idConversa}`, () => {
+      console.log(`🔔 Nova mensagem na conversa ${idConversa}`)
       // Atualiza as mensagens imediatamente
-      atendimentoService.buscarMensagens(conversaId).then(msgs => {
+      atendimentoService.buscarMensagens(idConversa).then(msgs => {
         mensagens.value = msgs
-        // Aqui você pode tocar o som de notificação se quiser
+        // Opcional: Tocar som aqui
       })
     })
   }
@@ -119,32 +149,26 @@ export const useConversaStore = defineStore('conversa', () => {
     
     await atendimentoService.encerrar(conversaSelecionada.value.conversaId)
     
-    if (currentChatSubscription.value) {
-        currentChatSubscription.value.unsubscribe()
-    }
-    
-    await carregarConversas()
     limparSelecao()
+    // Recarrega para remover da lista de abertas
+    await carregarConversas()
   }
 
   async function transferirConversa(atendenteId: number) {
     if (!conversaSelecionada.value) return
     await atendimentoService.transferir(conversaSelecionada.value.conversaId, atendenteId)
     
-    if (currentChatSubscription.value) {
-        currentChatSubscription.value.unsubscribe()
-    }
-    await carregarConversas()
     limparSelecao()
+    await carregarConversas()
   }
 
   function limparSelecao() {
-    conversaSelecionada.value = null
-    mensagens.value = []
     if (currentChatSubscription.value) {
       currentChatSubscription.value.unsubscribe()
       currentChatSubscription.value = null
     }
+    conversaSelecionada.value = null
+    mensagens.value = []
   }
 
   return {
@@ -160,6 +184,7 @@ export const useConversaStore = defineStore('conversa', () => {
     enviarMensagem,
     encerrarConversa,
     transferirConversa,
-    limparSelecao
+    limparSelecao,
+    moverParaTopo
   }
 })
