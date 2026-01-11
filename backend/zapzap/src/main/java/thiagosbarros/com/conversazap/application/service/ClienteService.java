@@ -64,6 +64,7 @@ public class ClienteService {
                 .orElseThrow(()-> new ClienteNaoEncontradoException("Cliente não encontrado."));
 
         cliente.definirNome(clienteDTO.nome());
+        cliente.atualizarTelefone(clienteDTO.telefone());
         return toDto(cliente);
 
     }

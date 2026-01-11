@@ -71,4 +71,10 @@ public class Cliente {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public void atualizarTelefone(String telefone) {
+        if(telefone != null) {
+            this.telefone = telefone;
+        }
+    }
 }
