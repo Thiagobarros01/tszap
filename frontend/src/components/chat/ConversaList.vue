@@ -84,7 +84,7 @@ function formatPhone(phone: string): string {
     </div>
 
     <!-- Conversation List -->
-    <div v-else class="flex-1 overflow-y-auto scrollbar-thin space-y-1 p-2 pb-4">
+    <div v-else class="flex-1 overflow-y-auto scrollbar-thin space-y-1 p-2 pb-8">
       <button
         v-for="conversa in conversasFiltradas"
         :key="conversa.conversaId"
